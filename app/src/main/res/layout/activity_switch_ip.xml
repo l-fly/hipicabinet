@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="返回"
+        android:id="@+id/btn_back"/>
+
+    <RadioGroup
+        android:paddingLeft="20dp"
+        android:id="@+id/rg_func"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <RadioButton
+            android:layout_marginTop="20dp"
+            android:id="@+id/rb_ip_1"
+            android:text="海湃测试环境"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <RadioButton
+            android:layout_marginTop="20dp"
+            android:id="@+id/rb_ip_2"
+            android:text="海湃正式环境"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <RadioButton
+            android:layout_marginTop="20dp"
+            android:id="@+id/rb_ip_11"
+            android:text="湃能"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <RadioButton
+            android:layout_marginTop="20dp"
+            android:id="@+id/rb_ip_500"
+            android:text="远程下发端口"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </RadioGroup>
+
+
+</LinearLayout>

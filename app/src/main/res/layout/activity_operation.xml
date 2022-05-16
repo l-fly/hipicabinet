@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/btn_back"
+            android:gravity="center"
+            android:text="返回"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="50dp"/>
+        <Button
+            android:layout_marginLeft="10dp"
+            android:id="@+id/bt_goto_info"
+            android:gravity="center"
+            android:text="查看"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="50dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="设备地址：" />
+
+                    <EditText
+                        android:id="@+id/et_slave_id"
+                        android:singleLine="true"
+                        android:textColorHint="#C7C7C7"
+                        android:layout_width="100dp"
+                        android:layout_height="50dp"
+                        android:hint="10进制"
+                        android:inputType="numberDecimal" />
+
+                </LinearLayout>
+                <TextView
+                    android:text="功能码"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+                <RadioGroup
+                    android:id="@+id/rg_func"
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <RadioButton
+                        android:id="@+id/rb_func03"
+                        android:text="03"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                    <RadioButton
+                        android:id="@+id/rb_func04"
+                        android:text="04"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                    <RadioButton
+                        android:id="@+id/rb_func16"
+                        android:text="16"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </RadioGroup>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="寄存器地址：" />
+
+                    <EditText
+                        android:id="@+id/et_offset"
+                        android:singleLine="true"
+                        android:textColorHint="#C7C7C7"
+                        android:layout_width="100dp"
+                        android:layout_height="50dp"
+                        android:hint="10进制"
+                        android:inputType="numberDecimal" />
+
+                    <Button
+                        android:layout_marginLeft="40dp"
+                        android:id="@+id/btn_send"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="发送" />
+
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/area_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="寄存器数量：" />
+
+                    <EditText
+                        android:id="@+id/et_amount"
+                        android:singleLine="true"
+                        android:textColorHint="#C7C7C7"
+                        android:layout_width="100dp"
+                        android:layout_height="50dp"
+                        android:hint="10进制"
+                        android:inputType="numberDecimal" />
+
+                </LinearLayout>
+                <LinearLayout
+                    android:visibility="gone"
+                    android:id="@+id/area_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="写入值：" />
+
+                    <EditText
+                        android:id="@+id/et_multi_value"
+                        android:digits="0123456789abcdefABCDEF,"
+                        android:textColorHint="#C7C7C7"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:hint="多个数值用,隔开" />
+
+                </LinearLayout>
+                <!--<Button
+                    android:id="@+id/bt_ccu_part1"
+                    android:gravity="center"
+                    android:text="CCU输入1-22"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"/>
+                <Button
+                    android:id="@+id/bt_ccu_part2"
+                    android:gravity="center"
+                    android:text="CCU输入50-53"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"/>
+                <Button
+                    android:id="@+id/bt_ccu_part3"
+                    android:gravity="center"
+                    android:text="CCU保持1-4"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"/>
+                <Button
+                    android:id="@+id/bt_ccu_part4"
+                    android:gravity="center"
+                    android:text="CCU保持100-102"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"/>
+                <Button
+                    android:id="@+id/bt_pms_part1"
+                    android:gravity="center"
+                    android:text="pms输入1-28"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"/>
+                <Button
+                    android:id="@+id/bt_pms_part2"
+                    android:gravity="center"
+                    android:text="pms保持100-109"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"/>
+                <Button
+                    android:id="@+id/bt_pms_part3"
+                    android:gravity="center"
+                    android:text="pms输入100-102"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"/>-->
+            </LinearLayout>
+        </ScrollView>
+
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent">
+            <Button
+                android:id="@+id/btn_clear_record"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="清空记录" />
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/tv_console"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:text="输出" />
+
+            </ScrollView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+
+</LinearLayout>

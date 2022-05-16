@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <LinearLayout
+        android:id="@+id/btn_back"
+        android:padding="20dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:src="@mipmap/icon_back"
+            android:layout_width="50dp"
+            android:layout_height="50dp" />
+        <TextView
+            android:text="返回"
+            android:textSize="20sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginTop="60dp"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/ll_account"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <TextView
+            android:paddingLeft="10dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_kuan_deep_login"
+            android:textSize="14sp"
+            android:layout_width="358dp"
+            android:layout_height="40dp"
+            android:hint="请输入账号"
+            android:maxLength="30"
+            android:maxLines="1"
+            android:id="@+id/account"/>
+
+        <TextView
+            android:paddingLeft="10dp"
+            android:gravity="center_vertical"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_kuan_light_login"
+            android:textSize="14sp"
+            android:layout_width="358dp"
+            android:layout_height="40dp"
+            android:hint="请输入密码"
+            android:maxLength="30"
+            android:id="@+id/password"
+            android:maxLines="1"
+            android:inputType="textPassword" />
+
+        <TextView
+            android:layout_marginTop="40dp"
+            android:gravity="center"
+            android:background="@drawable/btn_selector"
+            android:textColor="#ffffff"
+            android:textSize="18sp"
+            android:layout_width="358dp"
+            android:layout_height="50dp"
+            android:text="登录"
+            android:id="@+id/commit" />
+    </LinearLayout>
+
+    <include
+        android:id="@+id/ll_key"
+        layout="@layout/layout_keyboard_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>
