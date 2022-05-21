@@ -29,10 +29,9 @@ public class TcpManager {
     private TcpReceiver receiver = new TcpReceiver() {
         @Override
         public void connected() {
-
             LogUtil.i("TcpManager mina  connected");
             if(LocalDataManager.initStatus == 2){
-                //ReportManager.login();
+                ReportManager.login();
             }
         }
 
@@ -42,7 +41,6 @@ public class TcpManager {
             lastReceiverDataTime = CustomMethodUtil.elapsedRealtime();;
             LogUtil.i("TcpManager mina  receive" + NumberBytes.getHexString(buffer));
             parseData(buffer);
-
         }
 
         @Override
@@ -92,12 +90,12 @@ public class TcpManager {
             case 1:
                 //SERVER_IP = "192.168.0.22";
                 //SERVER_PORT = 9988;
-                SERVER_IP = "iot.jiabaida.com";
-                SERVER_PORT = 1024;
+                SERVER_IP = "47.112.169.63";
+                SERVER_PORT = 9988;
                 LogUtil.i("TcpManager mina  ip: " + 1);
                 break;
             case 2:
-                SERVER_IP = "192.168.0.22";
+                SERVER_IP = "47.112.169.63";
                 SERVER_PORT = 9988;
                 LogUtil.i("TcpManager mina  ip: " + 2);
                 break;
@@ -106,11 +104,17 @@ public class TcpManager {
                 SERVER_PORT = 8083;
                 LogUtil.i("TcpManager mina  ip: " + 11);
                 break;
-            case 500:
+            case 21:
+                //SERVER_IP = "iot.jiabaida.com";
+                SERVER_IP = "iot-test.jiabaida.com";
+                SERVER_PORT = 1024;
+                LogUtil.i("TcpManager mina  ip: " + 11);
+                break;
+           /* case 500:
                 SERVER_IP = PreferencesUtil.getInstance().getServerIp();
                 SERVER_PORT = PreferencesUtil.getInstance().getServerPort();
                 LogUtil.i("TcpManager mina  ip: " + 11);
-                break;
+                break;*/
         }
     }
 
@@ -235,88 +239,90 @@ public class TcpManager {
     private void decodeOneFrame(String jsonString){
        // LogUtil.d("TcpManager receive oneFrame " + new String(oneFrame));
         try {
-            //String jsonString  =  new String(oneFrame);
-            JSONObject rootObject = new JSONObject(jsonString);
-            int msgType = rootObject.getInt("msgType");
-            String txnNo = rootObject.getString("txnNo");
-            LogUtil.d("TcpManager decodeOneFrame msgType " + msgType);
-            switch (msgType){
-                case 111:
-                    int result = rootObject.getInt("result");
-                    if(result == 1){
-                        //todo
-                        LogUtil.i("TcpManager 登陸成功");
-                    }
-                    break;
+            if (jsonString.contains("msgType") && jsonString.contains("txnNo")){
+                JSONObject rootObject = new JSONObject(jsonString);
+                int msgType = rootObject.getInt("msgType");
+                String txnNo = rootObject.getString("txnNo");
+                LogUtil.d("TcpManager decodeOneFrame msgType " + jsonString);
+                switch (msgType){
+                    case 111:
+                        int result = rootObject.getInt("result");
+                        if(result == 1){
+                            LocalDataManager.initStatus = 2;
+                            LogUtil.i("TcpManager 登陸成功");
+                        }
+                        break;
 
-                case 500:
-                    RemoteControlRequest request = JsonUtils.jsonToBean(jsonString,RemoteControlRequest.class);
-                    List<RemoteControlRequest.ParamListBean> paramList = request.getParamList();
-                    for (RemoteControlRequest.ParamListBean bean : paramList){
-                        String value = bean.getValue();
-                        switch (bean.getId()){
-                            case "switchControl":
-                                if (value.equals("01") || value.equals("02") || value.equals("03")){
-                                    OrderManager.getInstance().receiveServerOrder(txnNo,bean);
-                                }else if(value.equals("04") ){
-                                   int doorid =  bean.getDoorId();
-                                   if(doorid>0 && doorid<LocalDataManager.slotNum){
-                                       CustomMethodUtil.open(doorid - 1);
-                                       ReportManager.baseResponse(501,1,txnNo);
-                                   }else {
-                                       ReportManager.baseResponse(501,2,txnNo);
-                                   }
-                                }else if(value.equals("06") ){
-                                    int doorid =  bean.getDoorId();
-                                    if(doorid>0 && doorid<LocalDataManager.slotNum){
-                                        CustomMethodUtil.setPortDisable(doorid - 1,true);
-                                        ReportManager.baseResponse(501,1,txnNo);
+                    case 500:
+                        RemoteControlRequest request = JsonUtils.jsonToBean(jsonString,RemoteControlRequest.class);
+                        List<RemoteControlRequest.ParamListBean> paramList = request.getParamList();
+                        for (RemoteControlRequest.ParamListBean bean : paramList){
+                            String value = bean.getValue();
+                            switch (bean.getId()){
+                                case "switchControl":
+                                    if (value.equals("01") /*|| value.equals("02") || value.equals("03")*/
+                                            || value.equals("11") || value.equals("12")){
+                                        OrderManager.getInstance().receiveServerOrder(txnNo,bean);
+                                    }/*else if(value.equals("04") ){
+                                        int doorid =  bean.getDoorId();
+                                        if(doorid>0 && doorid<LocalDataManager.slotNum){
+                                            CustomMethodUtil.open(doorid - 1);
+                                            ReportManager.baseResponse(501,1,txnNo);
+                                        }else {
+                                            ReportManager.baseResponse(501,2,txnNo);
+                                        }
+                                    }else if(value.equals("06") ){
+                                        int doorid =  bean.getDoorId();
+                                        if(doorid>0 && doorid<LocalDataManager.slotNum){
+                                            CustomMethodUtil.setPortDisable(doorid - 1,true);
+                                            ReportManager.baseResponse(501,1,txnNo);
+                                        }else {
+                                            ReportManager.baseResponse(501,2,txnNo);
+                                        }
+                                    }else if(value.equals("07") ){
+                                        int doorid =  bean.getDoorId();
+                                        if(doorid>0 && doorid<LocalDataManager.slotNum){
+                                            CustomMethodUtil.setPortDisable(doorid - 1,false);
+                                            ReportManager.baseResponse(501,1,txnNo);
+                                        }else {
+                                            ReportManager.baseResponse(501,2,txnNo);
+                                        }
                                     }else {
                                         ReportManager.baseResponse(501,2,txnNo);
-                                    }
-                                }else if(value.equals("07") ){
-                                    int doorid =  bean.getDoorId();
-                                    if(doorid>0 && doorid<LocalDataManager.slotNum){
-                                        CustomMethodUtil.setPortDisable(doorid - 1,false);
+                                    }*/
+
+                                    break;
+                                case "handle":
+                                    ReportManager.baseResponse(501,1,txnNo);
+                                    break;
+                                case "swCabVolControl":
+                                    try {
+                                        int audio = Integer.parseInt(value);
+                                        CustomMethodUtil.setAudioSet(audio);
                                         ReportManager.baseResponse(501,1,txnNo);
-                                    }else {
-                                        ReportManager.baseResponse(501,2,txnNo);
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                        ReportManager.baseResponse(501,0,txnNo);
                                     }
-                                }else {
+
+                                    break;
+                                case "swCabTempControl":
+                                    break;
+                                case "swCabSocControl":
+                                    try {
+                                        int cabSoc = Integer.parseInt(value);
+                                        LocalDataManager.outValidSoc = cabSoc;
+                                        ReportManager.baseResponse(501,1,txnNo);
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                        ReportManager.baseResponse(501,0,txnNo);
+                                    }
+                                    break;
+                                case "swCabReset":
+                                    break;
+                                case "swCabTcpPort":
                                     ReportManager.baseResponse(501,2,txnNo);
-                                }
-
-                                break;
-                            case "handle":
-                                ReportManager.baseResponse(501,1,txnNo);
-                                break;
-                            case "swCabVolControl":
-                                try {
-                                    int audio = Integer.parseInt(value);
-                                    CustomMethodUtil.setAudioSet(audio);
-                                    ReportManager.baseResponse(501,1,txnNo);
-                                }catch (Exception e){
-                                    e.printStackTrace();
-                                    ReportManager.baseResponse(501,0,txnNo);
-                                }
-
-                                break;
-                            case "swCabTempControl":
-                                break;
-                            case "swCabSocControl":
-                                try {
-                                    int cabSoc = Integer.parseInt(value);
-                                    LocalDataManager.outValidSoc = cabSoc;
-                                    ReportManager.baseResponse(501,1,txnNo);
-                                }catch (Exception e){
-                                    e.printStackTrace();
-                                    ReportManager.baseResponse(501,0,txnNo);
-                                }
-                                break;
-                            case "swCabReset":
-                                break;
-                            case "swCabTcpPort":
-                                try {
+                               /* try {
                                     String[] strs = value.split(",");
                                     if (strs.length == 2){
                                         int port = Integer.parseInt(strs[1]);
@@ -333,30 +339,30 @@ public class TcpManager {
                                 }catch (Exception e){
                                     e.printStackTrace();
                                     ReportManager.baseResponse(501,0,txnNo);
-                                }
-                                break;
-                            case "startHeat":
-                                break;
-                            case "stopHeat":
-                                break;
-                            case "maxChgCurrent":
-                                break;
-                            case "overTemp":
-                                break;
-                            case "recOverTemp":
-                                break;
-                            case "alarmTemp":
-                                break;
-                            case "recalarmTemp":
-                                break;
+                                }*/
+                                    break;
+                                case "startHeat":
+                                    break;
+                                case "stopHeat":
+                                    break;
+                                case "maxChgCurrent":
+                                    break;
+                                case "overTemp":
+                                    break;
+                                case "recOverTemp":
+                                    break;
+                                case "alarmTemp":
+                                    break;
+                                case "recalarmTemp":
+                                    break;
+                            }
                         }
-                    }
-                    break;
-                case 411:
-                    dropWait(txnNo);
-                    break;
+                        break;
+                    case 411:
+                        dropWait(txnNo);
+                        break;
+                }
             }
-
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -18,7 +18,8 @@ public class MeterEntity {
         getDataThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (true) {//升级时退出循环
+                while (true) {
+                    LocalDataManager.getInstance().getMeterData();
                     try {
                         Thread.sleep(300000);
                     }catch (Exception e){}

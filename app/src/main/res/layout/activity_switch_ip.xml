@@ -36,8 +36,8 @@
             android:layout_height="wrap_content"/>
         <RadioButton
             android:layout_marginTop="20dp"
-            android:id="@+id/rb_ip_500"
-            android:text="远程下发端口"
+            android:id="@+id/rb_ip_21"
+            android:text="嘉佰达"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </RadioGroup>

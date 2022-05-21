@@ -1,5 +1,6 @@
 package com.haipai.cabinet.model.entity;
 
+import com.haipai.cabinet.entity.BatteryInfo;
 import com.haipai.cabinet.manager.LocalDataManager;
 import com.haipai.cabinet.util.LogUtil;
 import com.haipai.cabinet.util.NumberBytes;
@@ -34,30 +35,41 @@ public class BatteryEntity extends BaseEntity{
     Thread getDataThread;
 
     int port;
+    boolean isExist = false;
+
+    public boolean isExist() {
+        return isExist;
+    }
+
+    public void setExist(boolean exist) {
+        isExist = exist;
+        if (!isExist){
+            setSn("ffffffff");
+        }
+    }
+
     public BatteryEntity(int mport){
         port = mport;
         getDataThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (true) {//升级时退出循环
-                   /* if(!hasPartOneData){
-
-                    }*/
-                    LocalDataManager.getInstance().getBatteryDataPartOne(port);
-                    LocalDataManager.getInstance().getBatteryDataPartTow(port);
+                    if (isExist){
+                        LocalDataManager.getInstance().getBatteryDataPartOne(port);
+                        LocalDataManager.getInstance().getBatteryDataPartTow(port);
+                    }
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(1500);
                     }catch (Exception e){}
                 }
             }
         });
         getDataThread.start();
     }
-    boolean hasPartOneData;
+
     byte[] dataPartOne;
     public void setDataPartOne(byte[] data){
         LogUtil.i("Battery setdata  111  " + port);
-        hasPartOneData = true;
         dataPartOne = data;
 
         if (data.length > 2){
@@ -83,25 +95,59 @@ public class BatteryEntity extends BaseEntity{
             bytes[3] = data[17];
             setFwBuildNum(NumberBytes.bytesToInt(bytes));
         }
-        if (data.length > 31){
-            byte[] bytes = new byte[14];
-            System.arraycopy(data,18,bytes,0,14);
-            setSn(NumberBytes.byte2String(bytes,14));
+        if (data.length > 29){
+
+           /* byte[] bytes = new byte[12];
+            System.arraycopy(data,18,bytes,0,12);
+            setPid(NumberBytes.byte2String(bytes,12));*/
         }
-        if (data.length > 33){
-            setNominalmAh(NumberBytes.bytesToInt(new byte[]{data[32], data[33]}));
+        if (data.length > 61){
+            String sn;
+
+            /*if (manufacturer == 1){
+                byte[] bytes = new byte[32];
+                System.arraycopy(data,30,bytes,0,32);
+
+                if (bytes[0] == 0x00){
+                    sn = "ffffffff";
+                }else {
+                    sn = new String(bytes);
+                }
+            }else {
+                byte[] bytes = new byte[32];
+                System.arraycopy(data,30,bytes,0,32);
+
+                if (bytes[0] == 0x00){
+                    sn = "ffffffff";
+                }else {
+                    sn = new String(bytes);
+                }
+
+            }*/
+            byte[] bytes = new byte[24];
+            System.arraycopy(data,30,bytes,0,24);
+
+            if (bytes[0] == 0x00){
+                sn = "ffffffff";
+            }else {
+                sn = new String(bytes);
+            }
+            setSn(sn);
         }
-        if (data.length > 35){
-            setProductionDate(NumberBytes.bytesToInt(new byte[]{data[34], data[35]}));
+        if (data.length > 63){
+            setNominalmAh(NumberBytes.bytesToInt(new byte[]{data[62], data[63]}));
         }
-        if (data.length > 37){
-            setClusterCount(NumberBytes.bytesToInt(new byte[]{data[36], data[37]}));
+        if (data.length > 65){
+            setProductionDate(NumberBytes.bytesToInt(new byte[]{data[64], data[65]}));
         }
-        if (data.length > 39){
-            setNtcCount(NumberBytes.bytesToInt(new byte[]{data[38], data[39]}));
+        if (data.length > 67){
+            setClusterCount(NumberBytes.bytesToInt(new byte[]{data[66], data[67]}));
         }
-        if (data.length > 41){
-            setCycle(NumberBytes.bytesToInt(new byte[]{data[40], data[41]}));
+        if (data.length > 69){
+            setNtcCount(NumberBytes.bytesToInt(new byte[]{data[68], data[69]}));
+        }
+        if (data.length > 71){
+            setCycle(NumberBytes.bytesToInt(new byte[]{data[70], data[71]}));
         }
     }
     boolean hasPartTowData;
@@ -161,6 +207,9 @@ public class BatteryEntity extends BaseEntity{
         }
         if(data.length > 41){
             setPackUvpCount(NumberBytes.bytesToInt(new byte[]{data[40], data[41]}));
+        }
+        if(data.length > 43){
+            setPackUvpCount(NumberBytes.bytesToInt(new byte[]{data[42], data[43]}));
         }
 
     }
@@ -412,5 +461,21 @@ public class BatteryEntity extends BaseEntity{
 
     public void setCycle(int cycle) {
         this.cycle = cycle;
+    }
+
+    public String getDescribe(){
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer
+                .append("port").append(":").append(getPort())
+                .append(", id").append(":").append(pid)
+                .append(", sn:").append(sn)
+                .append(", fault:").append(fault)
+                .append(", current").append(":").append(current)
+                .append(", voltage").append(":").append(voltage)
+                .append(", Soc").append(":").append(soc)
+                .append(", Cycle").append(":").append(cycle)
+                .append(", residualmAh").append(":").append(residualmAh)
+                .append("\n");
+        return stringBuffer.toString();
     }
 }

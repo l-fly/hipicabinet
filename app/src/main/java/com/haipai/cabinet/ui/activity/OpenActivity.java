@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.haipai.cabinet.R;
+import com.haipai.cabinet.manager.LocalDataManager;
 import com.haipai.cabinet.util.CustomMethodUtil;
 
 public class OpenActivity extends BaseActivity {
@@ -36,8 +37,7 @@ public class OpenActivity extends BaseActivity {
         mAdapter = new OpenAdapter(this);
         mRecyclerContainer.setLayoutManager(new StaggeredGridLayoutManager(6, StaggeredGridLayoutManager.VERTICAL));
         mRecyclerContainer.setAdapter(mAdapter);
-        //todo
-        mAdapter.notifyItemRangeInserted(0, 12);
+        mAdapter.notifyItemRangeInserted(0, LocalDataManager.slotNum);
 
     }
 
@@ -61,7 +61,7 @@ public class OpenActivity extends BaseActivity {
         @Override
         public void onBindViewHolder(@NonNull MyViewHold holder, @SuppressLint("RecyclerView") int position) {
             holder.text.setText(""+(position+1));
-            if(true){
+            if(!CustomMethodUtil.isOpen(position)){
                 holder.text.setTextColor(0xffffffff);
                 holder.text.setBackgroundColor(0xff000000);
             }else{
@@ -80,8 +80,7 @@ public class OpenActivity extends BaseActivity {
 
         @Override
         public int getItemCount() {
-            //todo
-            return 12;
+            return LocalDataManager.slotNum;
         }
 
         class MyViewHold extends RecyclerView.ViewHolder{
@@ -91,5 +90,10 @@ public class OpenActivity extends BaseActivity {
                 text = (TextView) itemView.findViewById(R.id.text);
             }
         }
+    }
+    @Override
+    public void passSecond() {
+        super.passSecond();
+        mAdapter.notifyDataSetChanged();
     }
 }

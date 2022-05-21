@@ -68,7 +68,7 @@ public class PmsEntity extends BaseEntity{
                     }
                     LocalDataManager.getInstance().getPmsDataPartTow(port);
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(1500);
                     }catch (Exception e){}
                 }
             }
@@ -152,6 +152,11 @@ public class PmsEntity extends BaseEntity{
         }
         if(data.length > 7){
             setBatStatus(NumberBytes.bytesToInt(new byte[]{data[6], data[7]}));
+            if((batStatus&1) != 0){
+                battery.setExist(true);
+            }else {
+                battery.setExist(false);
+            }
         }
         if(data.length > 11){
             byte[] bytes = new byte[4];
@@ -191,6 +196,9 @@ public class PmsEntity extends BaseEntity{
         }
         if(data.length > 5){
             setBatTempAlarm(data[5]);
+        }
+        if(data.length > 7){
+            setDeviceEnable(NumberBytes.bytesToInt(new byte[]{data[6], data[7]}));
         }
     }
     boolean hasPartFourData;
@@ -375,16 +383,23 @@ public class PmsEntity extends BaseEntity{
         this.cabinID = cabinID;
     }
 
+    public int getDeviceEnable() {
+        return deviceEnable;
+    }
+
+    public void setDeviceEnable(int deviceEnable) {
+        this.deviceEnable = deviceEnable;
+    }
+
     public boolean hasBattery(){
-        return ((batStatus&1) != 0)&&((batStatus&(1<<1)) != 0)&&((batStatus&(1<<2)) != 0);
+        return ((batStatus&1) != 0)/*&&((batStatus&(1<<1)) != 0)*/&&((batStatus&(1<<2)) != 0);
     }
     public boolean isOpen(){
-        //todo
-        return false;
+        return ((devState&1) == 0);
     }
     public BatteryInfo getBatteryInfo(){
         BatteryInfo info = new BatteryInfo();
-        info.setpId(battery.getPid());
+        //info.setpId(battery.getPid());
         info.setSn(battery.getSn());
         info.setPort(battery.getPort());
         info.setCycle(battery.getCycle());
@@ -404,6 +419,7 @@ public class PmsEntity extends BaseEntity{
 
         stringBuffer.append("硬件版本:").append(getHwVersion()).append("\n");
         stringBuffer.append("固件版本:").append(getFwVersion()).append("\n");
+        stringBuffer.append("\n");
 
         stringBuffer.append("Capacity0=").append(capacity0).append("-")
                 .append("支持风扇电源控制:").append((capacity0&(1<<0))!=0?"是":"否")
@@ -414,9 +430,9 @@ public class PmsEntity extends BaseEntity{
                 .append(" ;支持舱内NTC功能:").append((capacity0&(1<<5))!=0?"是":"否")
                 .append(" ;支持板上NTC功能:").append((capacity0&(1<<6))!=0?"是":"否")
                 .append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("DevState=").append(devState).append("-")
-                .append("打开仓门:").append((devState&(1<<0))!=0?"是":"否")
+                .append("打开仓门:").append((devState&(1<<0))==0?"是":"否")
                 .append(" ;启动充电:").append((devState&(1<<1))!=0?"是":"否")
                 .append(" ;启动放电:").append((devState&(1<<2))!=0?"是":"否")
                 .append(" ;启动仓内风扇:").append((devState&(1<<3))!=0?"是":"否")
@@ -424,13 +440,13 @@ public class PmsEntity extends BaseEntity{
                 .append(" ;亮仓门红色LED:").append((devState&(1<<5))!=0?"是":"否")
                 .append(" ;亮仓门绿色LED:").append((devState&(1<<6))!=0?"是":"否")
                 .append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("onBoardNtc=").append(onBoardNtc).append("-")
                 .append("板上NTC值:").append(onBoardNtc).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("cabinetNtc=").append(cabinetNtc).append("-")
                 .append("板上NTC值:").append(cabinetNtc).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("BatStatus=").append(batStatus).append("-")
                 .append("电池是否在位:").append((batStatus&(1<<0))!=0?"是":"否")
                 .append(" ;电池是否连接:").append((batStatus&(1<<1))!=0?"是":"否")
@@ -444,7 +460,7 @@ public class PmsEntity extends BaseEntity{
                 .append(" ;电池严重故障:").append((batStatus&(1<<9))!=0?"是":"否")
                 .append(" ;电池普通故障:").append((batStatus&(1<<10))!=0?"是":"否")
                 .append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("BatFault=").append(batFault).append("-")
                 .append("充电器电流和电池电流值不匹配:").append((batFault&(1<<0))!=0?"是":"否")
                 .append(" ;充电时电池传感器温度大于预期值:").append((batFault&(1<<1))!=0?"是":"否")
@@ -462,7 +478,7 @@ public class PmsEntity extends BaseEntity{
                 .append(" ;电池和Pms通信不稳定:").append((batFault&(1<<13))!=0?"是":"否")
                 .append(" ;电池和Pms通信恢复:").append((batFault&(1<<14))!=0?"是":"否")
                 .append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("ChgrStatus=").append(chgrStatus).append("-")
                 .append("充电器是否连接:").append((chgrStatus&(1<<0))!=0?"是":"否")
                 .append(" ;充电器是否准备好:").append((chgrStatus&(1<<1))!=0?"是":"否")
@@ -473,41 +489,43 @@ public class PmsEntity extends BaseEntity{
                 .append(" ;充电器是严重故障:").append((chgrStatus&(1<<6))!=0?"是":"否")
                 .append(" ;充电器是普通故障:").append((chgrStatus&(1<<7))!=0?"是":"否")
                 .append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("ChgrFault=").append(chgrFault).append("-")
                 .append("充电器过流故障:").append((chgrFault&(1<<0))!=0?"是":"否")
                 .append(" ;充电器短路故障:").append((chgrFault&(1<<1))!=0?"是":"否")
                 .append(" ;充电器过压故障:").append((chgrFault&(1<<2))!=0?"是":"否")
                 .append(" ;充电器过温故障:").append((chgrFault&(1<<3))!=0?"是":"否")
                 .append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("FireAlarmStatus=").append(fireAlarmStatus).append("-")
                 .append("电池高温触发火警:").append((chgrFault&(1<<0))!=0?"是":"否")
                 .append(" ;仓内NTC高温触发火警:").append((chgrFault&(1<<1))!=0?"是":"否")
                 .append(" ;PMS板上NTC高温触发火警:").append((chgrFault&(1<<2))!=0?"是":"否")
                 .append(" ;电池热失控触发火警:").append((chgrFault&(1<<3))!=0?"是":"否")
                 .append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("fullSoc=").append(fullSoc).append("-")
                 .append("允许借出电量值:").append(fullSoc).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("FanOnTemp=").append(fanOnTemp).append("-")
                 .append("风扇启动温度:").append(fanOnTemp).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("FanOnTempBacklash=").append(fanOnTempBacklash).append("-")
                 .append("风扇温度回差:").append(fanOnTempBacklash).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("PmsTempOnBoardAlarm=").append(pmsTempOnBoardAlarm).append("-")
                 .append("PMS板上温度告警值:").append(pmsTempOnBoardAlarm).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("BatTempAlarm=").append(batTempAlarm).append("-")
                 .append("电池内部温度告警值:").append(batTempAlarm).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("DeviceEnable=").append(deviceEnable).append("-")
                 .append("充电使能:").append((deviceEnable&(1<<0))!=0?"是":"否")
                 .append(" ;板上温度传感器使能:").append((deviceEnable&(1<<1))!=0?"是":"否")
                 .append(" ;根据温度动态充电使能:").append((deviceEnable&(1<<2))!=0?"是":"否")
                 .append("\n");
+        stringBuffer.append("\n");
+        stringBuffer.append("battery - ").append(battery.getDescribe()).append("\n");
         return stringBuffer.toString();
     }
 }

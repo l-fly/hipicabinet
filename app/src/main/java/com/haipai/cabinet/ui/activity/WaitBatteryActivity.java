@@ -46,7 +46,9 @@ public class WaitBatteryActivity extends BaseActivity {
     protected void onStart() {
         super.onStart();
         boolean needFindRealEmpty = true;
-        if (LocalDataManager.shouldEmptyPort !=-1 && !CustomMethodUtil.isPortDisable(LocalDataManager.shouldEmptyPort)){
+        if (LocalDataManager.shouldEmptyPort !=-1
+                &&CustomMethodUtil.isPortEmpty(LocalDataManager.shouldEmptyPort)
+                &&!CustomMethodUtil.isPortDisable(LocalDataManager.shouldEmptyPort)){
             LocalDataManager.openSlot1 = LocalDataManager.shouldEmptyPort;
             needFindRealEmpty = false;
         }
@@ -74,8 +76,9 @@ public class WaitBatteryActivity extends BaseActivity {
             CustomMethodUtil.open(LocalDataManager.openSlot1);
             tvSlot.setText("" + (LocalDataManager.openSlot1 +1));
             tvDescribe.setText("正在打开" + (LocalDataManager.openSlot1 +1) + "号仓门...");
-            speak("正在打开" + (LocalDataManager.openSlot1 +1) + "号仓门...");
+           // speak("正在打开" + (LocalDataManager.openSlot1 +1) + "号仓门...");
             openTimes ++;
+            curStep = OPEN_PROCESS;
         }else{
             //没有足够的空仓
             result = ResultActivity.NO_EMPTY_SLOT;
@@ -92,9 +95,14 @@ public class WaitBatteryActivity extends BaseActivity {
         tvEndTime.setText("" + endTime);
         endTime--;
         if (endTime > 0){
+            //LogUtil.i("#####curStep  " + curStep);
             if (curStep == OPEN_PROCESS){
                 if(endTime % 2 == 1) {
                     if(CustomMethodUtil.isOpen(LocalDataManager.openSlot1)){
+                        tvSlot.setText("" + (LocalDataManager.openSlot1 +1));
+                        tvDescribe.setText((LocalDataManager.openSlot1 +1) + "号仓门已打开，请放入电池，插好电池并关闭仓门。");
+                        speak((LocalDataManager.openSlot1 +1) + "号仓门已打开，请放入电池，插好电池并关闭仓门。");
+
                         ReportManager.boxOpenReport(LocalDataManager.openSlot1);
                         curStep = CLOSE_PROCESS;
                         if(endTime < 12){
@@ -119,14 +127,16 @@ public class WaitBatteryActivity extends BaseActivity {
                     }
                 }
             }else if(curStep == CLOSE_PROCESS){
-                if(endTime % 3 == 1) {
+
+               // if(endTime % 3 == 1) {
+                   // LogUtil.i("#####curStep  " + CustomMethodUtil.isOpen(LocalDataManager.openSlot1));
                     if(!CustomMethodUtil.isOpen(LocalDataManager.openSlot1)){
                         result = 0;
                         endTime = 1;
                     }else {
                         result = ResultActivity.NO_CLOSE_SLOT;
                     }
-                }
+               // }
             }
         }else if(endTime ==0){
             if(result == 0){

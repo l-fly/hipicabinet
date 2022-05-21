@@ -36,6 +36,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MyApplication extends Application {
+    public static int SCREEN_TYPE = -1;
+    public static final int SCREEN_TYPE_MAICHONG_7CUN = 1;    //脉冲7寸屏
+    public static final int SCREEN_TYPE_DERRUI_7CUN = 2;    //德睿7寸屏
+
     public interface SecondCheck{
         void onPassSecond();
     }
@@ -84,27 +88,35 @@ public class MyApplication extends Application {
     private long lastTimeTaskRun = 0;
     private Timer timer = null;
     private MyTimerTask timerTask = null;
-    private int initTick = 5;
+    private int timerTick = 0;
 
     class MyTimerTask extends TimerTask {
         public void run() {
             long now = CustomMethodUtil.elapsedRealtime();
             lastTimeTaskRun = now;
-
-            if (initTick > 4) {
-               // ReportManager.messageAllReport();
-                if(LocalDataManager.initStatus == 0 ) {
-                   // LocalDataManager.getInstance().getCcuDataPartOne();
-                } else if(LocalDataManager.initStatus == 1){
-                   // TcpManager.getInstance().login();
-                }
-                initTick = 0;
-            } else {
-                initTick++;
+            timerTick ++;
+            if(timerTick > 14400){
+                timerTick = 0;
             }
 
             LocalDataManager.getInstance().onPassSecond();
             TcpManager.getInstance().onPassSecond();
+
+            LogUtil.i("#######initStatus  "  + LocalDataManager.initStatus);
+            if (timerTick % 5 == 0) {
+                if(LocalDataManager.initStatus == 1){
+                    ReportManager.login();
+                }
+            }
+            if(timerTick % 60 ==0){
+                if(LocalDataManager.initStatus ==2){
+                    ReportManager.messageAllReport();
+                }
+
+            }
+
+
+
         }
     }
     List<SecondCheck> mSecondCheckList = new ArrayList<>();
@@ -177,7 +189,19 @@ public class MyApplication extends Application {
         int height = wm.getDefaultDisplay().getHeight();
         LogUtil.d("MODEL:"+ Build.MODEL+", BRAND:"+Build.BRAND+", DEVICE:"+Build.DEVICE+", MANUFACTURER:"+Build.MANUFACTURER+", PRODUCT:"+Build.PRODUCT+", width="+width+", height="+height);
 
-        String serialPath = "/dev/ttyS3";
+        String serialPath ;
+        if(Build.MODEL.equalsIgnoreCase("MC-Android") && Build.BRAND.equalsIgnoreCase("Android")
+                && Build.DEVICE.equalsIgnoreCase("rk3288_box") && Build.MANUFACTURER.equalsIgnoreCase("rockchip") ){
+            SCREEN_TYPE = SCREEN_TYPE_MAICHONG_7CUN;
+            serialPath = "/dev/ttyS3";
+
+        }else if(Build.MODEL.equalsIgnoreCase("DRCC_T10") && Build.BRAND.equalsIgnoreCase("Allwinner")
+                && Build.DEVICE.equalsIgnoreCase("a40-p1") && Build.MANUFACTURER.equalsIgnoreCase("Allwinner")){
+            SCREEN_TYPE = SCREEN_TYPE_DERRUI_7CUN;
+            serialPath = "/dev/ttyS2";
+        }else {
+            serialPath = "/dev/ttyS3";
+        }
         int baudrate = 115200;
 
         SerialPortUtil.getInstance().onCreate(serialPath,baudrate);
@@ -236,6 +260,8 @@ public class MyApplication extends Application {
         stringBuffer.append("APK version").append(":").append(UpgradeManager.getInstance().apkVerInstalled).append("\n");
         stringBuffer.append("APK auto-upgrade :").append(UpgradeManager.getInstance().isAvilibleApk(this,"com.haipai.appupgradehelper")).append("\n");
         stringBuffer.append("DevId").append(":").append(LocalDataManager.devId).append("\n");
+        stringBuffer.append("emptySlotNum").append(":").append(LocalDataManager.getEmptyNum()).append("\n");
+
         stringBuffer.append("doorStatus").append(":");
         for (int i=0;i<LocalDataManager.slotNum;i++){
             stringBuffer.append(i+1).append("-").append(CustomMethodUtil.isOpen(i)?"open; " :"close; ");
@@ -269,14 +295,15 @@ public class MyApplication extends Application {
         StringBuffer stringBuffer = new StringBuffer();
         stringBuffer
                 .append("port").append(":").append(info.getPort()+1)
-                .append("id").append(":").append(info.getpId())
+               /* .append("id").append(":").append(info.getpId())*/
                 .append(", sn:").append(info.getSn())
                 .append(", fault:").append(info.getFault())
                 .append(", current").append(":").append(info.getCurrent())
                 .append(", voltage").append(":").append(info.getVoltage())
                 .append(", Soc").append(":").append(info.getSoc())
                 .append(", Cycle").append(":").append(info.getCycle())
-                .append("residualmAh").append(":").append(info.getResidualmAh());
+                .append(", residualmAh").append(":").append(info.getResidualmAh());
+        stringBuffer.append("\n");
         return stringBuffer.toString();
     }
     private static Context mContext;

@@ -16,7 +16,7 @@ public class AllPropertiesRequest implements Serializable {
      */
 
     private String devId;
-    private long txnNo;
+    private String txnNo;
     private int msgType;
     private int isFull;
     private List<BoxListBean> boxList;
@@ -31,11 +31,11 @@ public class AllPropertiesRequest implements Serializable {
         this.devId = devId;
     }
 
-    public long getTxnNo() {
+    public String getTxnNo() {
         return txnNo;
     }
 
-    public void setTxnNo(long txnNo) {
+    public void setTxnNo(String txnNo) {
         this.txnNo = txnNo;
     }
 

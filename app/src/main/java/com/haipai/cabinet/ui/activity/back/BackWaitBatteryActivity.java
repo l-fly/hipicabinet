@@ -76,7 +76,7 @@ public class BackWaitBatteryActivity extends BaseActivity {
             CustomMethodUtil.open(LocalDataManager.openSlot1);
             tvSlot.setText("" + (LocalDataManager.openSlot1 +1));
             tvDescribe.setText("正在打开" + (LocalDataManager.openSlot1 +1) + "号仓...");
-            speak("正在打开" + (LocalDataManager.openSlot1 +1) + "号仓...");
+           // speak("正在打开" + (LocalDataManager.openSlot1 +1) + "号仓...");
             openTimes ++;
         }else{
             //没有足够的空仓
@@ -96,6 +96,10 @@ public class BackWaitBatteryActivity extends BaseActivity {
             if (curStep == OPEN_PROCESS){
                 if(endTime % 2 == 1) {
                     if(CustomMethodUtil.isOpen(LocalDataManager.openSlot1)){
+                        tvSlot.setText("" + (LocalDataManager.openSlot1 +1));
+                        tvDescribe.setText((LocalDataManager.openSlot1 +1) + "号仓门已打开，请放入电池，插好电池并关闭仓门。");
+                        speak((LocalDataManager.openSlot1 +1) + "号仓门已打开，请放入电池，插好电池并关闭仓门。");
+
                         curStep = CLOSE_PROCESS;
                         ReportManager.boxOpenReport(LocalDataManager.openSlot1);
                         if(endTime < 12){

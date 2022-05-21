@@ -29,6 +29,7 @@ import com.haipai.cabinet.ui.activity.back.BackWaitBatteryActivity;
 import com.haipai.cabinet.ui.activity.get.GetOpenActivity;
 import com.haipai.cabinet.util.CustomMethodUtil;
 import com.haipai.cabinet.util.LogUtil;
+import com.haipai.cabinet.util.PreferencesUtil;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import butterknife.BindView;
@@ -49,8 +50,10 @@ public class MainActivity extends BaseActivity {
                     }
                     break;
                 case 2:
+                    startActivity(new Intent(MainActivity.this, GetOpenActivity.class));
                     break;
                 case 3:
+                    startActivity(new Intent(MainActivity.this, BackWaitBatteryActivity.class));
                     break;
             }
 
@@ -65,9 +68,15 @@ public class MainActivity extends BaseActivity {
                     mHandler.sendEmptyMessage(1);
                     break;
                 case "02"://还电池
-                    mHandler.sendEmptyMessage(2);
+                    //mHandler.sendEmptyMessage(2);
                     break;
                 case "03"://取电池
+                   // mHandler.sendEmptyMessage(3);
+                    break;
+                case "11"://首放 取
+                    mHandler.sendEmptyMessage(2);
+                    break;
+                case "12"://退还电池
                     mHandler.sendEmptyMessage(3);
                     break;
             }
@@ -90,13 +99,20 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.tv_return_num)
     TextView tvReturnNum;
 
+    @BindView(R.id.tv_empty_num)
+    TextView tvEmptyNum;
+
     @BindView(R.id.iv_qr_code)
     ImageView ivQrCode;
+
+    @BindView(R.id.tv_code)
+    TextView tvCode;
+
     @OnClick({R.id.tv_return_num})
     public void actionTest(){
-        startActivity(new Intent(MainActivity.this, WaitBatteryActivity.class));
-
-        //ReportManager.login();
+        //startActivity(new Intent(MainActivity.this, BackWaitBatteryActivity.class));
+        //LocalDataManager.devId = "";
+        ReportManager.login();
 
     }
 
@@ -104,7 +120,7 @@ public class MainActivity extends BaseActivity {
     public void actionTest2(){
 
         //ReportManager.messageAllReport();
-        startActivity(new Intent(MainActivity.this, LoginActivtity.class));
+        startActivity(new Intent(MainActivity.this, MenuActivity.class));
     }
     private long lastLoginClick = 0;
     private int hiddenTotal = 0;
@@ -131,10 +147,11 @@ public class MainActivity extends BaseActivity {
 
         LogUtil.i("#####    protected void onCreate() ");
     }
-
+    private long onResumeTime;
     @Override
     protected void onResume() {
         super.onResume();
+        onResumeTime = CustomMethodUtil.elapsedRealtime();
         LocalDataManager.initOrderStatus();
         OrderManager.getInstance().setOrderListener(orderListener);
 
@@ -160,16 +177,41 @@ public class MainActivity extends BaseActivity {
         tvGetNum72.setTypeface(newTypeface);
 
         tvReturnNum.setTypeface(newTypeface);
+
+        tvEmptyNum.setTypeface(newTypeface);
     }
 
     @Override
     public void setCurrent() {
         LocalDataManager.currentActivity = LocalDataManager.MAIN_ACTIVITY;
     }
-
+    private int timerTick = 0;
     @Override
     public void passSecond() {
         super.passSecond();
+        timerTick ++;
+        if(timerTick > 14400){
+            timerTick = 0;
+        }
+        if (timerTick %3 == 1){
+            if (LocalDataManager.shouldEmptyPort != -1){
+                if (!CustomMethodUtil.isPortEmpty(LocalDataManager.shouldEmptyPort)
+                        && !CustomMethodUtil.isOpen(LocalDataManager.shouldEmptyPort)){
+                    long now = CustomMethodUtil.elapsedRealtime();
+                    if(now - onResumeTime < 300000){
+                        if (LocalDataManager.shouldOpenTimes < 3){
+                            CustomMethodUtil.open(LocalDataManager.shouldEmptyPort);
+                            LocalDataManager.shouldOpenTimes ++;
+                        }else {
+                            LocalDataManager.shouldEmptyPort = -1;
+                        }
+                    }else {
+                        LocalDataManager.shouldEmptyPort = -1;
+                    }
+                }
+            }
+        }
+
 
         int exchangeNum48 = LocalDataManager.getLogicValidBatteryNum(0);
         tvExchangeNum48.setText(exchangeNum48 < 10? "0" + exchangeNum48 : "" + exchangeNum48);
@@ -188,6 +230,10 @@ public class MainActivity extends BaseActivity {
 
         int returnNum = LocalDataManager.getLogicReturnBatteryNum();
         tvReturnNum.setText(returnNum < 10? "0" + returnNum : "" + returnNum);
+
+        int emptyNum = LocalDataManager.getEmptyNum();
+        tvEmptyNum.setText(emptyNum < 10? "0" + emptyNum : "" + emptyNum);
+
         if (needDraw){
             drawQRCode();
         }
@@ -198,7 +244,30 @@ public class MainActivity extends BaseActivity {
             return ;
         }
         try {
-            BitMatrix matrix = new MultiFormatWriter().encode(LocalDataManager.devId, BarcodeFormat.QR_CODE, 300, 300);
+            int ip = PreferencesUtil.getInstance().getSwitchIp();
+            String msg;
+            switch (ip){
+                case 1:
+                    msg = "";
+                    break;
+                case 2:
+                    msg = "";
+                    break;
+                case 11:
+                    msg = "https://pnenergy.net/miniapp/wx46ccbcae91738bdd/?";
+                    break;
+                case 21:
+                    msg = "https://iot.jiabaida.com/wxb0a0ffa3955420bc/?devId=";
+                    break;
+                default:
+                    msg = "";
+                break;
+            }
+            msg = msg + LocalDataManager.devId;
+           // msg = msg +"CHZD12GDTY200329110";
+            tvCode.setText("终端号：" + LocalDataManager.devId);
+           // tvCode.setText("终端号：CHZD12GDTY200329110" );
+            BitMatrix matrix = new MultiFormatWriter().encode(msg, BarcodeFormat.QR_CODE, 300, 300);
             matrix = updateBit(matrix,18);
             BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
             Bitmap bitmap = barcodeEncoder.createBitmap(matrix);

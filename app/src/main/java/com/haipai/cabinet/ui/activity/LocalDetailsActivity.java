@@ -26,6 +26,12 @@ public class LocalDetailsActivity extends BaseActivity {
 
     @Override
     public void initUIView() {
+
+    }
+
+    @Override
+    public void passSecond() {
+        super.passSecond();
         timeTick ++;
         if(timeTick % 3 ==1){
             StringBuffer stringBuffer = new StringBuffer();

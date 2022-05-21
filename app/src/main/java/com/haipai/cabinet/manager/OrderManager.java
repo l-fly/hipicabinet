@@ -52,16 +52,15 @@ public class OrderManager {
                 type = 2;
             }
         }
-        if (value.equals("01") || value.equals("02") || value.equals("03")){
+        if (value.equals("01") /*|| value.equals("02") || value.equals("03")*/
+                || value.equals("11") || value.equals("12")){
             if(LocalDataManager.currentActivity != LocalDataManager.MAIN_ACTIVITY || currentOrder !=null){
                 result = 3;
             }
-            if(LocalDataManager.getEmptyNum() == 0){
+            if(!value.equals("11") && LocalDataManager.getEmptyNum() == 0){
                 result = 4;
             }
-            if(LocalDataManager.getEmptyNum() == 0){
-                result = 4;
-            }
+
             if(LocalDataManager.getLogicValidBatteryNum(type) == 0){
                 result = 5;
             }

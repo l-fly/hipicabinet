@@ -43,6 +43,7 @@ public class BackCheckingActivity extends BaseActivity {
     public void initUIView() {
         tvSlot.setText("" +(LocalDataManager.openSlot1+1));
         tvDescribe.setText("正在检测电池...");
+        speak("正在检测电池...");
     }
 
     @Override
@@ -52,15 +53,15 @@ public class BackCheckingActivity extends BaseActivity {
         endTime--;
         if (endTime > 0) {
             if (curStep == STEP_CHECK_HASBATTERY){
-                if(endTime % 3 == 1) {
+                //if(endTime % 3 == 1) {
                     if(checkHasBatteryTimes < 4){
                         if(!CustomMethodUtil.isPortEmpty(LocalDataManager.openSlot1)){
                             List<BatteryInfo> batteryInfos = LocalDataManager.getInstance().getBatteriesClone();
                             synchronized (batteryInfos){
                                 for(BatteryInfo batteryInfo : batteryInfos){
                                     if(batteryInfo.getPort() == LocalDataManager.openSlot1){
-                                        LocalDataManager.mBatteryGetOrBack = batteryInfo;
-                                        return;
+                                        LocalDataManager.mBatteryBack = batteryInfo;
+                                        break;
                                     }
                                 }
                             }
@@ -75,7 +76,7 @@ public class BackCheckingActivity extends BaseActivity {
                         result = BackResultActivity.NO_CHECK_BATTERY;
                         endTime = 1;
                     }
-                }
+               // }
             }
             if (curStep == STEP_CHECK_BATTERYOK){
                 LogUtil.i("#########");
@@ -88,12 +89,13 @@ public class BackCheckingActivity extends BaseActivity {
         }
     }
     private void onCheckInBattery(){
-        BatteryInfo battery = LocalDataManager.mBatteryGetOrBack;
+        BatteryInfo battery = LocalDataManager.mBatteryBack;
         if(battery != null){
-            if (battery.getpId().equals(OrderManager.currentOrder.getBatteryId())){
+            if (battery.getSn().equals(OrderManager.currentOrder.getBatteryId())){
                 if(battery.isInValid()){
                     //体检成功
                     result = BackResultActivity.SUCCESS;
+                    endTime = 1;
                 }else {
                     //体检失败
                     result = BackResultActivity.CHECK_BATTERY_FAIL;

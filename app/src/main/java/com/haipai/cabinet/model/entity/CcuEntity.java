@@ -73,14 +73,15 @@ public class CcuEntity extends BaseEntity{
     int ccuCtrl;
     int allPmsCtrl;
     int opStateCtrl;
-
+    int manufacturer;
     Thread getDataThread;
     public CcuEntity(){
         getDataThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (true) {//升级时退出循环
+                while (true) {//升级时退出循环 todo
                     if(!hasPartOneData){
+                        LogUtil.i("ccu getCcuDataPartOne 111");
                         LocalDataManager.getInstance().getCcuDataPartOne();
                     }
                     if (!hasPartThreeData){
@@ -91,7 +92,7 @@ public class CcuEntity extends BaseEntity{
                     }
                     LocalDataManager.getInstance().getCcuDataPartTow();
                     try {
-                        Thread.sleep(4000);
+                        Thread.sleep(10000);
                     }catch (Exception e){}
                 }
             }
@@ -103,8 +104,10 @@ public class CcuEntity extends BaseEntity{
     public void setDataPartOne(byte[] data){
         hasPartOneData = true;
         LogUtil.i("ccu setdata 111");
-        LocalDataManager.initStatus = 1;
         dataPartOne = data;
+        if (data.length > 1){
+            setManufacturer(data[1]);
+        }
         if (data.length > 11){
             setHwMainVer(data[2]);
             setHwSubVer(data[3]);
@@ -127,7 +130,13 @@ public class CcuEntity extends BaseEntity{
         }
         if (data.length > 17){
             int cabinCount = NumberBytes.bytesToInt(new byte[]{data[16], data[17]});
+            // todo 防止出错
+            if (cabinCount > 12){
+                cabinCount = 12;
+            }
             setCabinCount(cabinCount);
+            LocalDataManager.slotNum = cabinCount;
+
             List<PmsEntity> list = LocalDataManager.getInstance().cabinet.getPmsList();
             if(list.size() == 0 && cabinCount > 0){
                 for (int i= 0; i<cabinCount; i++){
@@ -141,10 +150,40 @@ public class CcuEntity extends BaseEntity{
             System.arraycopy(data,18,bytes,0,12);
             setPid(NumberBytes.byte2String(bytes,12));
         }
-        if (data.length > 43){
-            byte[] bytes = new byte[14];
-            System.arraycopy(data,30,bytes,0,14);
-            setSn(NumberBytes.byte2String(bytes,14));
+        if (data.length > 61){
+            String sn;
+           /* if (manufacturer == 1){
+                byte[] bytes = new byte[19];
+                System.arraycopy(data,30,bytes,0,19);
+                if (bytes[0] == 0x00){
+                    sn = "ffffffff";
+                }else {
+                    sn = new String(bytes);
+                }
+            }else {
+                byte[] bytes = new byte[32];
+                System.arraycopy(data,30,bytes,0,32);
+                if (bytes[0] == 0x00){
+                    sn = "ffffffff";
+                }else {
+                    sn = new String(bytes);
+                }
+            }*/
+            byte[] bytes = new byte[19];
+            System.arraycopy(data,30,bytes,0,19);
+            if (bytes[0] == 0x00){
+                sn = "ffffffff";
+            }else {
+                sn = new String(bytes);
+            }
+            setSn(sn);
+            if (LocalDataManager.initStatus == 0){
+                LocalDataManager.initStatus = 1;
+                LocalDataManager.devId = "PNA12A001HP21120066";
+                //LocalDataManager.devId = sn;
+            }
+
+
         }
 
     }
@@ -157,18 +196,21 @@ public class CcuEntity extends BaseEntity{
         if(data.length > 3){
             setDevState(NumberBytes.bytesToInt(new byte[]{data[2], data[3]}));
         }
-        if(data.length > 4){
-            byte b = data[4];
-            setResetCount(b&3);
+        if(data.length > 5){
+            setDevFault(NumberBytes.bytesToInt(new byte[]{data[4], data[5]}));
         }
         if(data.length > 6){
-            setLcdTemp(data[6] -40);
+            byte b = data[6];
+            setResetCount(b&3);
         }
-        if(data.length > 7){
-            setChargerTemp(data[7] -40);
+        if(data.length > 8){
+            setLcdTemp(data[8] -40);
         }
         if(data.length > 9){
-            int fireAlarmMask = NumberBytes.bytesToInt(new byte[]{data[8], data[8]});
+            setChargerTemp(data[9] -40);
+        }
+        if(data.length > 11){
+            int fireAlarmMask = NumberBytes.bytesToInt(new byte[]{data[10], data[11]});
             setFireAlarmMask(fireAlarmMask);
             //todo
         }
@@ -216,6 +258,14 @@ public class CcuEntity extends BaseEntity{
         if(data.length > 5){
             setOpStateCtrl(NumberBytes.bytesToInt(new byte[]{data[4], data[5]}));
         }
+    }
+
+    public int getManufacturer() {
+        return manufacturer;
+    }
+
+    public void setManufacturer(int manufacturer) {
+        this.manufacturer = manufacturer;
     }
 
     public int getCapacity0() {
@@ -376,10 +426,10 @@ public class CcuEntity extends BaseEntity{
         stringBuffer.append("dataPartTow:").append(NumberBytes.getHexString(dataPartTow)).append("\n");
         stringBuffer.append("dataPartThree:").append(NumberBytes.getHexString(dataPartThree)).append("\n");
         stringBuffer.append("dataPartFour:").append(NumberBytes.getHexString(dataPartFour)).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("硬件版本:").append(getHwVersion()).append("\n");
         stringBuffer.append("固件版本:").append(getFwVersion()).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("Capacity0=").append(capacity0).append("-")
                 .append("电表:").append((capacity0&(1<<0))!=0?"是":"否")
                 .append(" ;柜门锁:").append((capacity0&(1<<1))!=0?"是":"否")
@@ -393,10 +443,10 @@ public class CcuEntity extends BaseEntity{
                 .append(" ;支持仓内防盗锁:").append((capacity0&(1<<9))!=0?"是":"否")
                 .append(" ;支持加热功能:").append((capacity0&(1<<10))!=0?"是":"否")
                 .append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("CabinCount=").append(cabinCount).append("-")
                 .append("仓位总数:").append(cabinCount).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("DevState=").append(devState).append("-")
                 .append("机柜进水:").append((devState&(1<<0))!=0?"是":"否")
                 .append(" ;风扇1启动:").append((devState&(1<<1))!=0?"是":"否")
@@ -404,40 +454,40 @@ public class CcuEntity extends BaseEntity{
                 .append(" ;PMS上电:").append((devState&(1<<3))!=0?"是":"否")
                 .append(" ;电表在位:").append((devState&(1<<4))!=0?"是":"否")
                 .append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("DevFault=").append(devFault).append("-")
                 .append("风扇1故障:").append((devFault&(1<<0))!=0?"是":"否")
                 .append(" ;风扇2故障:").append((devFault&(1<<1))!=0?"是":"否")
                 .append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("Lcd-Temp=").append(lcdTemp).append("-")
                 .append("LCD区温度:").append(lcdTemp).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("Charger-Temp=").append(chargerTemp).append("-")
                 .append("充电器区温度:").append(chargerTemp).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("FireAlarmMask=").append(fireAlarmMask).append("-")
                 .append("火警:").append(fireAlarmMask!=0?"是":"否").append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("DeviceEnable=").append(deviceEnable).append("-")
                 .append("柜内上温度传感器使能:").append((deviceEnable&(1<<0))!=0?"是":"否")
                 .append(" ;柜内下温度传感器使能:").append((deviceEnable&(1<<1))!=0?"是":"否").append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("FanPwrOn_temp =").append(fanPwrOnTemp).append("-")
                 .append("风扇启动温度:").append(fanPwrOnTemp).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("FanPwrOff_temp =").append(fanPwrOffTemp).append("-")
                 .append("风扇停止温度:").append(fanPwrOffTemp).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("MaxInputCurrent =").append(maxInputCurrent).append("-")
                 .append("柜子的最大输入电流:").append(maxInputCurrent).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("fullSoc =").append(fullSoc).append("-")
                 .append("可换电池电量值:").append(fullSoc).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("HighTempAlarm =").append(highTempAlarm).append("-")
                 .append("环境高温告警值:").append(highTempAlarm).append("\n");
-
+        stringBuffer.append("\n");
         stringBuffer.append("BatTempAlarm =").append(batTempAlarm).append("-")
                 .append("电池内部温度告警值:").append(batTempAlarm).append("\n");
 

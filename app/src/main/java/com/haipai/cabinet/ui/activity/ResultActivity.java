@@ -24,6 +24,7 @@ public class ResultActivity extends BaseActivity {
     public static final String KEY_RESULT = "RESULT";
     public static final int FAILED = -1; //失败
     public static final int SUCCESS = 0; //成功
+    public static final int FINISH = 1; //完成
     public static final int NO_EMPTY_SLOT = 1; //没有空仓
     public static final int NO_OPEN_SLOT = 2; //要进的电池仓门打不开
     public static final int NO_CLOSE_SLOT = 3; //仓门未关闭
@@ -56,7 +57,7 @@ public class ResultActivity extends BaseActivity {
             tvSlot.setText("换电失败");
             tvDescribe.setText("没有找到空仓");
             speak("换电失败，请重新扫码换电");
-            endTime = 5 ;
+            endTime = 7 ;
             //没有找到空仓，协议里没有此类型，用23替代
             ReportManager.switchFinishReport(23,LocalDataManager.openSlot1,null,null);
         }
@@ -64,7 +65,7 @@ public class ResultActivity extends BaseActivity {
             tvSlot.setText("换电失败");
             tvDescribe.setText((LocalDataManager.openSlot1+1)+"号仓门打不开");
             speak("换电失败，请重新扫码换电");
-            endTime = 5 ;
+            endTime = 7 ;
 
             //空仓柜门未打开，终止流程
             ReportManager.switchFinishReport(20,LocalDataManager.openSlot1,null,null);
@@ -73,7 +74,7 @@ public class ResultActivity extends BaseActivity {
             tvSlot.setText("换电失败");
             tvDescribe.setText((LocalDataManager.openSlot1+1)+"号仓门未关闭");
             speak("换电失败，请重新扫码换电");
-            endTime = 5 ;
+            endTime = 7 ;
 
             //用户没有放入电池，终止流程
             ReportManager.switchFinishReport(21,LocalDataManager.openSlot1,null,null);
@@ -82,7 +83,7 @@ public class ResultActivity extends BaseActivity {
             tvSlot.setText("换电失败");
             tvDescribe.setText("没有检测到电池,请检查电池是否插好");
             speak("没有检测到电池,请检查电池是否插好");
-            endTime = 5 ;
+            endTime = 7 ;
 
             //用户没有放入电池，终止流程
             ReportManager.switchFinishReport(21,LocalDataManager.openSlot1,null,null);
@@ -91,7 +92,7 @@ public class ResultActivity extends BaseActivity {
             tvSlot.setText("换电失败");
             tvDescribe.setText("电池不属于您，请联系客服");
             speak("电池不属于您，请联系客服");
-            endTime = 5 ;
+            endTime = 7 ;
 
             //用户与放入的电池不匹配，终止流程
             ReportManager.switchFinishReport(22,LocalDataManager.openSlot1,null,null);
@@ -100,7 +101,7 @@ public class ResultActivity extends BaseActivity {
             tvSlot.setText("换电失败");
             tvDescribe.setText("体检失败，请联系客服");
             speak("体检失败，请联系客服");
-            endTime = 5 ;
+            endTime = 7 ;
 
             //体检失败，终止流程
             ReportManager.switchFinishReport(23,LocalDataManager.openSlot1,null,null);
@@ -109,7 +110,7 @@ public class ResultActivity extends BaseActivity {
             tvSlot.setText("换电失败");
             tvDescribe.setText("没有可换电池，请去其他换电柜换电");
             speak("没有可换电池，请去其他换电柜换电");
-            endTime = 5 ;
+            endTime = 7 ;
 
             //没有可换电池，协议里没有此类型，用23替代
             ReportManager.switchFinishReport(23,LocalDataManager.openSlot1,null,null);
@@ -130,7 +131,7 @@ public class ResultActivity extends BaseActivity {
                        speak((LocalDataManager.openSlot2 + 1)+"号仓门已打开，请取出电池并关闭仓门！");
                        LocalDataManager.shouldEmptyPort = LocalDataManager.openSlot2;
                        endTime = 5;
-
+                       result = FINISH;
                        ReportManager.boxOpenReport(LocalDataManager.openSlot2);
                        //用户取出电池,流程正常结束
                        ReportManager.switchFinishReport(26,LocalDataManager.openSlot1,LocalDataManager.mBattery1,LocalDataManager.mBattery2);
@@ -163,7 +164,9 @@ public class ResultActivity extends BaseActivity {
                        tvDescribe.setText((LocalDataManager.openSlot1 + 1)+"号仓已打开，请取回原来的电池");
                        speak((LocalDataManager.openSlot1 + 1)+"号仓已打开，请取回原来的电池");
                        endTime = 5;
+                       LocalDataManager.shouldEmptyPort = LocalDataManager.openSlot1;
                        ReportManager.boxOpenReport(LocalDataManager.openSlot1);
+                       result = FAILED;
                    }else {
                        if(openInTimes < 5){
                            CustomMethodUtil.open(LocalDataManager.openSlot1);
@@ -180,13 +183,14 @@ public class ResultActivity extends BaseActivity {
            else if (result == NO_CHECK_BATTERY
                     || result == CHECK_BATTERY_FAIL
                     || result == NO_CHECK_BATTERY_ENOUGH){
-               if(endTime % 3 == 1) {
+               if(endTime % 4 == 1) {
                    if(CustomMethodUtil.isOpen(LocalDataManager.openSlot1)){
                        tvSlot.setText("换电失败");
                        tvDescribe.setText((LocalDataManager.openSlot1 + 1)+"号仓已打开，请取回原来的电池");
                        speak((LocalDataManager.openSlot1 + 1)+"号仓已打开，请取回原来的电池");
                        endTime = 5;
-
+                       result = FAILED;
+                       LocalDataManager.shouldEmptyPort = LocalDataManager.openSlot1;
                        ReportManager.boxOpenReport(LocalDataManager.openSlot1);
                    }else {
                        if(openInTimes < 5){

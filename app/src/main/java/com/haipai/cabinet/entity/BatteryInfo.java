@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 
 public class BatteryInfo implements Serializable {
-    String pId;
+    //String pId;
     String sn;
     int port;
     int fault;
@@ -34,13 +34,13 @@ public class BatteryInfo implements Serializable {
         this.cycle = cycle;
     }
 
-    public String getpId() {
+  /*  public String getpId() {
         return pId;
     }
 
     public void setpId(String pId) {
         this.pId = pId;
-    }
+    }*/
 
     public String getSn() {
         return sn;
@@ -120,7 +120,7 @@ public class BatteryInfo implements Serializable {
     }
 
     public BatteryInfo clone(BatteryInfo info){
-        pId = info.pId;
+        //pId = info.pId;
         sn = info.sn;
         port = info.port;
         fault = info.fault;

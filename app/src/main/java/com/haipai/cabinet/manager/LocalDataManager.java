@@ -4,6 +4,7 @@ package com.haipai.cabinet.manager;
 import com.haipai.cabinet.entity.BatteryInfo;
 import com.haipai.cabinet.model.entity.Cabinet;
 import com.haipai.cabinet.model.entity.PmsEntity;
+import com.haipai.cabinet.util.LogUtil;
 import com.haipai.cabinet.util.PreferencesUtil;
 
 import java.util.ArrayList;
@@ -20,25 +21,28 @@ public class LocalDataManager {
     public static final int OTHER_ACTIVITY = 0;
     public static int currentActivity = MAIN_ACTIVITY;
     /**
-     * 0,获取硬件初始信息，等待发送初始化给服务器
-     * 1，已获取硬件初始信息，正在发送初始化给服务器
-     * 2，已经发送初始化给服务器，收到应答了
+     * 0,获取硬件初始信息，等待登录服务器
+     * 1，已获取硬件初始信息，正在登录服务器
+     * 2，已经登录服务器，收到应答了
      */
     public static int initStatus = 0;
-    public static int slotNum = 12;   //插槽数
-    public static String devId = "CHZD12GDTY200329110";
+    public static int slotNum = 0;   //插槽数
+    //CHZD12GDTY200329110
+    public static String devId = "";
 
 
     public static int shouldEmptyPort = -1;
+    public static int shouldOpenTimes = 0;
 
     public static int openSlot1 = -1;
     public static int openSlot2 = -1;
     public static BatteryInfo mBattery1 = null;
     public static BatteryInfo mBattery2 = null;
 
-    public static BatteryInfo mBatteryGetOrBack = null;
+    public static BatteryInfo mBatteryGet = null;
+    public static BatteryInfo mBatteryBack = null;
 
-    public static int outValidSoc = 90;      //可借出电池电量值，小于此的电量不能借出
+    public static int outValidSoc = 1;      //可借出电池电量值，小于此的电量不能借出
 
     private static int batteryTotal = 0;
 
@@ -55,12 +59,14 @@ public class LocalDataManager {
     private static int batteryNum72 = 0;
     private static int realValidBatteryNum72 = 0;
     public static void initOrderStatus(){
+        shouldOpenTimes = 0;
         OrderManager.currentOrder = null;
         openSlot1 = -1;
         openSlot2 = -1;
         mBattery1 = null;
         mBattery2 = null;
-        mBatteryGetOrBack = null;
+        mBatteryGet = null;
+        mBatteryBack = null;
     }
     public static int getBatteryTotal(){
         return batteryTotal;
@@ -98,20 +104,24 @@ public class LocalDataManager {
         return num;
     }
     public static int getEmptyNum(){
-        int num = slotNum - batteryTotal - getDisableNum();
+        int num = slotNum - batteryNum48 - batteryNum60 -batteryNum72 - getDisableNum();
         if (num < 0){
             num = 0;
         }
         return num;
     }
     public static int getLogicReturnBatteryNum(){
-        int num = slotNum - batteryTotal - getDisableNum() -1;
+        LogUtil.i("#####getLogicReturnBatteryNum  " + batteryTotal);
+        int num = slotNum - batteryNum48 - batteryNum60 -batteryNum72 - getDisableNum() -1;
         if (num < 0){
             num = 0;
         }
         return num;
     }
     public static int getDisableNum(){
+        if(slotNum >= MAX_STATUS_NUM){
+            return 0;
+        }
         int num = 0;
         for (int i = 0 ; i < slotNum; i++){
             if (isPortDisable(i)){
@@ -209,12 +219,25 @@ public class LocalDataManager {
         return true;
     }
     public boolean isPortEmpty(int port) {
-        //todo
-        return true;
+        boolean empty = true;
+        if (port >= 0 && port < cabinet.getPmsList().size()) {
+            PmsEntity pms = cabinet.getPmsList().get(port);
+
+            if (pms.hasBattery()){
+                List<BatteryInfo> rlt = getBatteriesAllClone();
+                for (BatteryInfo info : rlt){
+                    if (info.getPort() == port){
+                        empty = false;
+                    }
+                }
+            }
+        }
+        return empty;
     }
     public static boolean checkBatteryNotOuted(BatteryInfo info){
         boolean isNoOuted = false;
-        if (info.isOutValid() && info.getPort()!= LocalDataManager.shouldEmptyPort) {
+        if (info.isOutValid()
+                && info.getPort()!= LocalDataManager.shouldEmptyPort) {
             //被换出去的里面的不能算有效的
             isNoOuted = true;
         }
@@ -239,7 +262,9 @@ public class LocalDataManager {
             BatteryInfo info = batteries.get(i);
             if(info.getType() == 0){
                 num48++;
-                if(isPortClose(info.getPort()) || !isPortDisable(info.getPort())){
+                if(isPortClose(info.getPort()) &&
+                        !isPortDisable(info.getPort())
+                        && !info.getSn().equals("ffffffff")){
                     if(checkBatteryNotOuted(info)){
                         valid48++;
                     }
@@ -250,7 +275,9 @@ public class LocalDataManager {
                 }
             }else if(info.getType() == 1){
                 num60++;
-                if(isPortClose(info.getPort()) || !isPortDisable(info.getPort())){
+                if(isPortClose(info.getPort())
+                        && !isPortDisable(info.getPort())
+                        && !info.getSn().equals("ffffffff")){
                     if(checkBatteryNotOuted(info)){
                         valid60++;
                     }
@@ -261,7 +288,9 @@ public class LocalDataManager {
                 }
             }else if(info.getType() == 2){
                 num72++;
-                if(isPortClose(info.getPort()) || !isPortDisable(info.getPort())){
+                if(isPortClose(info.getPort())
+                        && !isPortDisable(info.getPort())
+                        && !info.getSn().equals("ffffffff")){
                     if(checkBatteryNotOuted(info)){
                         valid72++;
                     }
@@ -275,7 +304,7 @@ public class LocalDataManager {
         synchronized (batterys){
             batterys = tempBatteries;
         }
-        synchronized (batterys){
+        synchronized (extraBatteries){
             extraBatteries = tempExtras;
         }
         batteryTotal = num48 + num60 + num72;
@@ -299,23 +328,16 @@ public class LocalDataManager {
     }
     public void getCcuDataPartOne(){
 
-        SerialManager.getInstance().send04(1,0,22);
+        SerialManager.getInstance().send04(1,0,31);
     }
     public void setCcuDataPartOne(byte[] data){
 
         cabinet.getCcu().setDataPartOne(data);
 
-        List<PmsEntity> list = LocalDataManager.getInstance().cabinet.getPmsList();
-        if(list.size() == 0 ){
-            for (int i= 0; i< 12; i++){
-                PmsEntity pmsEntity = new PmsEntity(i);
-                list.add(pmsEntity);
-            }
-        }
     }
     public void getCcuDataPartTow(){
 
-        SerialManager.getInstance().send04(1,49,5);
+        SerialManager.getInstance().send04(1,49,6);
     }
     public void setCcuDataPartTow(byte[] data){
 
@@ -368,7 +390,7 @@ public class LocalDataManager {
     public void getPmsDataPartThree(int port){
 
         if(cabinet.getPmsList().size() > port){
-            SerialManager.getInstance().send03(port +4,0,3);
+            SerialManager.getInstance().send03(port +4,0,4);
         }
     }
     public void setPmsDataPartThree(int port,byte[] data){
@@ -444,7 +466,7 @@ public class LocalDataManager {
     public void getBatteryDataPartOne(int port){
 
         if(cabinet.getPmsList().size() > port){
-            SerialManager.getInstance().send04(port +4,999,20);
+            SerialManager.getInstance().send04(port +4,999,36);
         }
     }
     public void setBatteryDataPartOne(int port,byte[] data){
@@ -456,7 +478,7 @@ public class LocalDataManager {
     public void getBatteryDataPartTow(int port){
 
         if(cabinet.getPmsList().size() > port){
-            SerialManager.getInstance().send04(port +4,149,2);
+            SerialManager.getInstance().send04(port +4,1499,23);
         }
     }
     public void setBatteryDataPartTow(int port,byte[] data){
@@ -472,17 +494,6 @@ public class LocalDataManager {
     public void setMeterDat(byte[] data){
         cabinet.getMeter().setDataPart(data);
     }
-   /* public void getBatteryDataPartThree(int port){
 
-        if(cabinet.getPmsList().size() > port){
-            SerialManager.getInstance().send04(port +4,1508,13);
-        }
-    }
-    public void setBatteryDataPartThree(int port,byte[] data){
-
-        if(cabinet.getPmsList().size() > port){
-            cabinet.getPmsList().get(port).getBattery().setDataPartThree(data);
-        }
-    }*/
 
 }

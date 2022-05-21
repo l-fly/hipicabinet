@@ -53,9 +53,9 @@ public class SwitchIpActivity extends BaseActivity {
                 mRgFunc.check(R.id.rb_ip_11);
                 inType = 11;
                 break;
-            case 500:
-                mRgFunc.check(R.id.rb_ip_500);
-                inType = 500;
+            case 21:
+                mRgFunc.check(R.id.rb_ip_21);
+                inType = 21;
                 break;
         }
         outType = inType;
@@ -72,8 +72,8 @@ public class SwitchIpActivity extends BaseActivity {
                     case R.id.rb_ip_11:
                         outType = 11;
                         break;
-                    case R.id.rb_ip_500:
-                        outType = 500;
+                    case R.id.rb_ip_21:
+                        outType = 21;
                         break;
                 }
             }

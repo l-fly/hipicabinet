@@ -69,7 +69,7 @@ public class SerialManager {
                         }
                     }
                     try {
-                        Thread.sleep(30);
+                        Thread.sleep(10);
                     }catch (Exception e){}
 
                   /*  synchronized (sendArray) {
@@ -138,6 +138,7 @@ public class SerialManager {
         data[6] = (byte)send.length;
         System.arraycopy(send,0,data,7,send.length);
         //addSendData( data);
+        LogUtil.d("serial send 16 " + NumberBytes.getHexString(data));
         return sendCmdReal(data);
     }
 
@@ -369,7 +370,7 @@ public class SerialManager {
      */
     private void receiveOneIntactFrame(byte[] oneFrame){
        // if(IS_SERIAL_LOG)
-         //   LogUtil.d("serial receive one frame " + NumberBytes.getHexString(oneFrame));
+            LogUtil.d("serial receive one frame " + NumberBytes.getHexString(oneFrame));
 
         if(oneFrame == null ){
             return;
@@ -380,13 +381,13 @@ public class SerialManager {
             int dataLength = NumberBytes.byteToInt(oneFrame[2]);
             byte [] realyData = new byte[dataLength];
             System.arraycopy(oneFrame,3,realyData,0,dataLength);
-
+            LogUtil.d("serial realyData data size :" + realyData.length);
            // if(IS_SERIAL_LOG)
-          //  LogUtil.d("serial receive realyData " + NumberBytes.getHexString(realyData));
-            if(devAddr == (byte)0x01 && dataLength == 44){
+            LogUtil.d("serial receive realyData " + NumberBytes.getHexString(realyData));
+            if(devAddr == (byte)0x01 && dataLength == 62){
                 LocalDataManager.getInstance().setCcuDataPartOne(realyData);
             }
-            if(devAddr == (byte)0x01 && dataLength == 10){
+            if(devAddr == (byte)0x01 && dataLength == 12){
                 LocalDataManager.getInstance().setCcuDataPartTow(realyData);
             }
             if(devAddr == (byte)0x01 && dataLength == 8){
@@ -406,7 +407,7 @@ public class SerialManager {
             if((devAddr >= (byte)0x04 & devAddr <= (byte)0x10) && dataLength == 20){
                 LocalDataManager.getInstance().setPmsDataPartTow(devAddr - 0x04,realyData);
             }
-            if((devAddr >= (byte)0x04 & devAddr <= (byte)0x10) && dataLength == 6){
+            if((devAddr >= (byte)0x04 & devAddr <= (byte)0x10) && dataLength == 8){
                 LocalDataManager.getInstance().setPmsDataPartThree(devAddr - 0x04,realyData);
             }
             if((devAddr >= (byte)0x04 & devAddr <= (byte)0x10) && dataLength == 4){
@@ -426,15 +427,13 @@ public class SerialManager {
                 LocalDataManager.getInstance().setChargerDataPartFour(devAddr - 0x04,realyData);
             }
 
-            if((devAddr >= (byte)0x04 & devAddr <= (byte)0x10) && dataLength == 40){
+            if((devAddr >= (byte)0x04 & devAddr <= (byte)0x10) && dataLength == 72){
                 LocalDataManager.getInstance().setBatteryDataPartOne(devAddr - 0x04,realyData);
             }
-            if((devAddr >= (byte)0x04 & devAddr <= (byte)0x10) && dataLength == 44){
+            if((devAddr >= (byte)0x04 & devAddr <= (byte)0x10) && dataLength == 46){
                 LocalDataManager.getInstance().setBatteryDataPartTow(devAddr - 0x04,realyData);
             }
-           /* if((devAddr >= (byte)0x04 & devAddr <= (byte)0x10) && dataLength == 26){
-                LocalDataManager.getInstance().setBatteryDataPartThree(devAddr - 0x04,realyData);
-            }*/
+
 
 
             if(serialListener!=null){

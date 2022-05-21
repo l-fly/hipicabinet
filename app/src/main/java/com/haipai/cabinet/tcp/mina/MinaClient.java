@@ -14,6 +14,7 @@ import org.apache.mina.core.service.IoService;
 import org.apache.mina.core.service.IoServiceListener;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.ProtocolDecoder;
@@ -271,17 +272,43 @@ public class MinaClient extends Thread {
         }
     }
     //解码  
+  //  CumulativeProtocolDecoder
+    public class ByteArrayDecoder extends CumulativeProtocolDecoder{
 
-    public class ByteArrayDecoder extends ProtocolDecoderAdapter {
+        @Override
+        protected boolean doDecode(IoSession ioSession, IoBuffer in, ProtocolDecoderOutput out) throws Exception {
+            if (in.remaining() > 4) {
+                in.mark();
+                int len = in.limit();
+                byte[] bytes = new byte[len];
+                in.get(bytes);
+                if (in.get(len-1) == 0x7d
+                        || in.get(len-1)  == 0X03){
+
+                    out.write(bytes);
+
+                    return true;
+                }else {
+                    in.reset();
+                    return false;
+
+                }
+            }
+            return false; // 断包，或者执行完，
+        }
+
+    }
+   /* public class ByteArrayDecoder extends ProtocolDecoderAdapter {
         @Override
         public void decode(IoSession session, IoBuffer in, ProtocolDecoderOutput out)
                 throws Exception {
             int limit = in.limit();
             byte[] bytes = new byte[limit];
             in.get(bytes);
+            LogUtil.i("TcpManager mina ByteArrayDecoder "  + NumberBytes.getHexString(bytes));
             out.write(bytes);
         }
-    }
+    }*/
 
     //工厂  
     public class ByteArrayCodecFactory implements ProtocolCodecFactory {

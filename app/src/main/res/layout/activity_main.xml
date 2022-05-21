@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.activity.MainActivity">
     <ImageView
-        android:alpha="0.7"
+        android:alpha="0.6"
         android:background="@mipmap/main_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
@@ -223,6 +223,19 @@
                     android:text="00"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
+                <TextView
+                    android:layout_marginLeft="40dp"
+                    android:textSize="22sp"
+                    android:text="空仓:"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/tv_empty_num"
+                    android:layout_marginLeft="10dp"
+                    android:textSize="40sp"
+                    android:text="00"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
             </LinearLayout>
         </LinearLayout>
         <LinearLayout
@@ -236,16 +249,74 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"/>
             <ImageView
-                android:layout_marginLeft="30dp"
+                android:src="@mipmap/icon_paidaren_logo_"
+                android:layout_width="285dp"
+                android:layout_height="100dp" />
+            <RelativeLayout
+                android:layout_marginTop="20dp"
+                android:layout_width="280dp"
+                android:layout_height="60dp"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_centerHorizontal="true"
+                    android:scaleType="centerCrop"
+                    android:alpha="0.5"
+                    android:src="@mipmap/bg_into_battery_detail"
+                    android:layout_width="220dp"
+                    android:layout_height="match_parent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="立即换电"
+                    android:textColor="@android:color/white"
+                    android:textSize="24sp" />
+
+            </RelativeLayout>
+            <ImageView
+                android:layout_marginTop="20dp"
                 android:id="@+id/iv_qr_code"
                 android:layout_width="220dp"
                 android:layout_height="220dp" />
+            <TextView
+                android:layout_marginTop="10dp"
+                android:textSize="20sp"
+                android:id="@+id/tv_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:layout_marginTop="20dp"
+                android:textSize="33sp"
+                android:text="客服电话：400-603-8801"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
             <View
                 android:layout_width="wrap_content"
-                android:layout_height="50dp"/>
+                android:layout_height="30dp"/>
         </LinearLayout>
     </LinearLayout>
-
+    <RelativeLayout
+        android:layout_marginBottom="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:orientation="horizontal">
+        <ImageView
+            android:alpha="0.8"
+            android:layout_centerHorizontal="true"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bg_see_battery"
+            android:layout_width="150dp"
+            android:layout_height="60dp" />
+        <TextView
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="查看电池"
+            android:textColor="@android:color/white"
+            android:textSize="20sp" />
+    </RelativeLayout>
     <View
         android:id="@+id/view_login"
         android:layout_width="50dp"

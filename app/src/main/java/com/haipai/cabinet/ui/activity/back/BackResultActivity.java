@@ -44,7 +44,7 @@ public class BackResultActivity extends BaseActivity {
             tvDescribe.setText("还电池成功");
             speak("还电池成功");
             endTime = 5 ;
-
+            LocalDataManager.shouldEmptyPort = -1;
             ReportManager.switchFinishReport(26,LocalDataManager.openSlot1,null,null);
         }
         else if(result == NO_EMPTY_SLOT){
@@ -52,7 +52,7 @@ public class BackResultActivity extends BaseActivity {
             tvDescribe.setText("没有找到空仓");
             speak("还电池失败，请重新扫码还电池");
             endTime = 5 ;
-
+            LocalDataManager.shouldEmptyPort = -1;
             //体检失败，协议里没有此类型，用23替代
             ReportManager.switchFinishReport(23,LocalDataManager.openSlot1,null,null);
         }
@@ -61,7 +61,7 @@ public class BackResultActivity extends BaseActivity {
             tvDescribe.setText((LocalDataManager.openSlot1+1)+"号仓门打不开");
             speak("还电池失败，请重新扫码还电池");
             endTime = 5 ;
-
+            LocalDataManager.shouldEmptyPort = -1;
             //空仓柜门未打开，终止流程
             ReportManager.switchFinishReport(20,LocalDataManager.openSlot1,null,null);
         }
@@ -70,7 +70,8 @@ public class BackResultActivity extends BaseActivity {
             tvDescribe.setText((LocalDataManager.openSlot1+1)+"号仓门未关闭");
             speak("还电池失败，请重新扫码还电池");
             endTime = 5 ;
-
+            CustomMethodUtil.open(LocalDataManager.openSlot1);
+            LocalDataManager.shouldEmptyPort = LocalDataManager.openSlot1;
             //空仓柜门未打开，终止流程
             ReportManager.switchFinishReport(21,LocalDataManager.openSlot1,null,null);
         }
@@ -79,7 +80,8 @@ public class BackResultActivity extends BaseActivity {
             tvDescribe.setText("没有检测到电池,请检查电池是否插好");
             speak("没有检测到电池,请检查电池是否插好");
             endTime = 5 ;
-
+            CustomMethodUtil.open(LocalDataManager.openSlot1);
+            LocalDataManager.shouldEmptyPort = LocalDataManager.openSlot1;
             //没有检测到电池，协议里没有此类型，用23替代
             ReportManager.switchFinishReport(23,LocalDataManager.openSlot1,null,null);
         }
@@ -88,7 +90,8 @@ public class BackResultActivity extends BaseActivity {
             tvDescribe.setText("体检失败，请联系客服");
             speak("体检失败，请联系客服");
             endTime = 5 ;
-
+            CustomMethodUtil.open(LocalDataManager.openSlot1);
+            LocalDataManager.shouldEmptyPort = LocalDataManager.openSlot1;
             //体检失败，协议里没有此类型，用23替代
             ReportManager.switchFinishReport(23,LocalDataManager.openSlot1,null,null);
         }
@@ -97,7 +100,8 @@ public class BackResultActivity extends BaseActivity {
             tvDescribe.setText("电池不属于您，请联系客服");
             speak("电池不属于您，请联系客服");
             endTime = 5 ;
-
+            CustomMethodUtil.open(LocalDataManager.openSlot1);
+            LocalDataManager.shouldEmptyPort = LocalDataManager.openSlot1;
             //用户与放入的电池不匹配，终止流程
             ReportManager.switchFinishReport(22,LocalDataManager.openSlot1,null,null);
         }

@@ -11,6 +11,7 @@ import com.haipai.cabinet.MyApplication;
 import com.haipai.cabinet.entity.BatteryInfo;
 import com.haipai.cabinet.manager.LocalDataManager;
 import com.haipai.cabinet.manager.SerialManager;
+import com.haipai.cabinet.manager.ThreadManager;
 import com.haipai.cabinet.ui.activity.MainActivity;
 
 import java.util.Collections;
@@ -34,11 +35,23 @@ public class CustomMethodUtil {
         return LocalDataManager.getInstance().isPortEmpty(slot);
     }
     public static void open(int port){
-        //todo
+
         byte [] send = new byte[2];
         send[0] = (byte) 1;
         send[1] = (byte) 0;
         SerialManager.getInstance().send16(port +4,100,send);
+
+        ThreadManager.execute(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    try{
+                        Thread.sleep(1000);
+                    }catch (Exception e){}
+                    LocalDataManager.getInstance().getPmsDataPartTow(port);
+                }
+            }
+        });
     }
     public static boolean isOpen(int slot){
         return !LocalDataManager.getInstance().isPortClose(slot);
@@ -78,17 +91,21 @@ public class CustomMethodUtil {
     public static void restartApp(){
         try{
             LogUtil.f("restartApp");
-            Thread.sleep(200);
+            Thread.sleep(2000);
             Intent intent = new Intent(MyApplication.getContext(), MainActivity.class);
             PendingIntent restartIntent = PendingIntent.getActivity(
                     MyApplication.getContext(), 0, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
             //退出程序
             AlarmManager mgr = (AlarmManager)MyApplication.getContext().getSystemService(Context.ALARM_SERVICE);
-            mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 2000, restartIntent); // 1秒钟后重启应用   
+            mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 1000, restartIntent);
+
             MyApplication.getContext().startActivity(new Intent(MyApplication.getContext(), MainActivity.class));
+
         }catch (Exception e){}
+
         android.os.Process.killProcess(android.os.Process.myPid());
+
     }
     public static void setAudioSet(int value){
         AudioManager audiomanage = (AudioManager) MyApplication.getContext().getSystemService(Context.AUDIO_SERVICE);

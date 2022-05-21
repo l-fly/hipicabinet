@@ -39,6 +39,7 @@ public class PreferencesUtil {
     /**
      * 设置ip , 1-海湃测试环境，2-海湃正式环境
      *         11-湃能
+     *         21-佳佰达
      *         500-远程下发的地址，此时需要从preferences中获取
      * @param ipType
      */

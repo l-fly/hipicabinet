@@ -32,7 +32,7 @@ public class GetOpenActivity extends BaseActivity {
     private int result = -1;
     private int STEP_CHECK_OUTBATTERY = 1; // 检测是否有电池阶段
     private int STEP_OPEN = 2; // 开门
-    private int STEP_OFAIL= 3; // 失败
+    private int STEP_GET= 3; // 取电池
     private int curStep = STEP_CHECK_OUTBATTERY;
 
     public static final int FAILED = -1; //失败
@@ -70,39 +70,41 @@ public class GetOpenActivity extends BaseActivity {
             if (curStep == STEP_OPEN){
                 if (result == SUCCESS){
                     if(endTime % 3 == 1) {
-                        if(CustomMethodUtil.isOpen(LocalDataManager.mBatteryGetOrBack.getPort())){
+                        if(CustomMethodUtil.isOpen(LocalDataManager.mBatteryGet.getPort())){
                             //成功
-                            tvSlot.setText("" + (LocalDataManager.mBatteryGetOrBack.getPort()+1));
-                            tvDescribe.setText((LocalDataManager.mBatteryGetOrBack.getPort()+1) + "号仓已打开，请取出电池！");
-                            speak((LocalDataManager.mBatteryGetOrBack.getPort()+1) + "号仓已打开，请取出电池！");
+                            tvSlot.setText("" + (LocalDataManager.mBatteryGet.getPort()+1));
+                            tvDescribe.setText((LocalDataManager.mBatteryGet.getPort()+1) + "号仓已打开，请取出电池！");
+                            speak((LocalDataManager.mBatteryGet.getPort()+1) + "号仓已打开，请取出电池！");
                             endTime = 3;
-
-                            LocalDataManager.shouldEmptyPort = LocalDataManager.mBatteryGetOrBack.getPort();
-                            ReportManager.boxOpenReport(LocalDataManager.mBatteryGetOrBack.getPort());
+                            curStep = STEP_GET;
+                            LocalDataManager.shouldEmptyPort = LocalDataManager.mBatteryGet.getPort();
+                            ReportManager.boxOpenReport(LocalDataManager.mBatteryGet.getPort());
 
                             //取电成功
-                            ReportManager.switchFinishReport(26,LocalDataManager.mBatteryGetOrBack.getPort(),null,null);
+                            ReportManager.switchFinishReport(26,LocalDataManager.mBatteryGet.getPort(),null,null);
                         }else {
                             if(openTimes < 5){
-                                CustomMethodUtil.open(LocalDataManager.mBatteryGetOrBack.getPort());
+                                CustomMethodUtil.open(LocalDataManager.mBatteryGet.getPort());
                                 openTimes ++;
                             }else {
                                 //仓门打不开
                                 tvSlot.setText("失败" );
-                                tvDescribe.setText((LocalDataManager.mBatteryGetOrBack.getPort()+1) + "号仓门打不开，请重新扫码取电！");
-                                speak((LocalDataManager.mBatteryGetOrBack.getPort()+1) + "号仓门打不开，请重新扫码取电！");
+                                tvDescribe.setText((LocalDataManager.mBatteryGet.getPort()+1) + "号仓门打不开，请重新扫码取电！");
+                                speak((LocalDataManager.mBatteryGet.getPort()+1) + "号仓门打不开，请重新扫码取电！");
                                 result = FAILED;
                                 endTime = 3;
-
+                                CustomMethodUtil.setPortDisable(LocalDataManager.mBatteryGet.getPort(),true);
                                 //满电仓门开启失败，终止流程
-                                ReportManager.switchFinishReport(24,LocalDataManager.mBatteryGetOrBack.getPort(),null,null);
+                                ReportManager.switchFinishReport(24,LocalDataManager.mBatteryGet.getPort(),null,null);
                             }
                         }
                     }
-                }else {
-                    tvSlot.setText("失败" );
-                    tvDescribe.setText("没有可取电池！");
-                    speak("没有可取电池！");
+                } else {
+                    if (result == NO_CHECK_BATTERY_ENOUGH){
+                        tvSlot.setText("失败" );
+                        tvDescribe.setText("没有可取电池！");
+                        speak("没有可取电池！");
+                    }
                     endTime = 3;
                     curStep = FAILED;
                 }
@@ -117,7 +119,7 @@ public class GetOpenActivity extends BaseActivity {
         List<BatteryInfo> bestList = new ArrayList<>();
         //String Voltage = OrderManager.currentOrder.getVoltage(); //协议不确定
 
-        int type = 1;//Voltage;todo
+        int type = 0;//Voltage;todo
         for(BatteryInfo batteryInfo : batteryInfos){
             if(batteryInfo.getType() == type
                     /*&& batteryInfo.getPort() != LocalDataManager.openSlot1*/
@@ -143,11 +145,11 @@ public class GetOpenActivity extends BaseActivity {
             }else {
                 LocalDataManager.mBatteryGetOrBack = bestList.get(new Random().nextInt(bestList.size()));
             }*/
-            LocalDataManager.mBatteryGetOrBack = bestList.get(bestList.size()-1);
-            CustomMethodUtil.open(LocalDataManager.mBatteryGetOrBack.getPort());
+            LocalDataManager.mBatteryGet = bestList.get(bestList.size()-1);
+            CustomMethodUtil.open(LocalDataManager.mBatteryGet.getPort());
             openTimes ++;
-            tvSlot.setText("" + (LocalDataManager.mBatteryGetOrBack.getPort()+1));
-            tvDescribe.setText("正在打开"+ (LocalDataManager.mBatteryGetOrBack.getPort()+1) + "号仓...");
+            tvSlot.setText("" + (LocalDataManager.mBatteryGet.getPort()+1));
+            tvDescribe.setText("正在打开"+ (LocalDataManager.mBatteryGet.getPort()+1) + "号仓...");
             result = SUCCESS;
             curStep = STEP_OPEN;
         }else {
@@ -155,7 +157,7 @@ public class GetOpenActivity extends BaseActivity {
             result = NO_CHECK_BATTERY_ENOUGH;
 
             //没有可取电池，用24代替
-            ReportManager.switchFinishReport(24,LocalDataManager.mBatteryGetOrBack.getPort(),null,null);
+            ReportManager.switchFinishReport(24,-1,null,null);
         }
     }
 }

@@ -45,6 +45,22 @@ public class CheckingActivity extends BaseActivity {
     public void initUIView() {
         tvSlot.setText("" +(LocalDataManager.openSlot1+1));
         tvDescribe.setText("正在检测电池...");
+        //speak("正在检测电池...");
+
+        if(!CustomMethodUtil.isPortEmpty(LocalDataManager.openSlot1)){
+            List<BatteryInfo> batteryInfos = LocalDataManager.getInstance().getBatteriesClone();
+            synchronized (batteryInfos){
+                for(BatteryInfo batteryInfo : batteryInfos){
+                    if(batteryInfo.getPort() == LocalDataManager.openSlot1){
+                        LocalDataManager.mBattery1 = batteryInfo;
+                        break;
+                    }
+                }
+            }
+            curStep = STEP_CHECK_BATTERYOK;
+            onCheckInBattery();
+            LogUtil.i("#####curStep wait isPortEmpty not ");
+        }
     }
 
     @Override
@@ -53,22 +69,26 @@ public class CheckingActivity extends BaseActivity {
         tvEndTime.setText("" + endTime);
         endTime--;
         if (endTime > 0) {
+            LogUtil.i("#####curStep wait  " + curStep);
             if (curStep == STEP_CHECK_HASBATTERY){
-                if(endTime % 3 == 1) {
-                    if(checkHasBatteryTimes < 4){
+                //if(endTime % 3 == 1) {
+                    if(checkHasBatteryTimes < 6){
+                        LogUtil.i("##########curStep wait checkHasBatteryTimes " + checkHasBatteryTimes);
                         if(!CustomMethodUtil.isPortEmpty(LocalDataManager.openSlot1)){
                             List<BatteryInfo> batteryInfos = LocalDataManager.getInstance().getBatteriesClone();
                             synchronized (batteryInfos){
                                 for(BatteryInfo batteryInfo : batteryInfos){
                                     if(batteryInfo.getPort() == LocalDataManager.openSlot1){
                                         LocalDataManager.mBattery1 = batteryInfo;
-                                        return;
+                                        break;
                                     }
                                 }
                             }
                             curStep = STEP_CHECK_BATTERYOK;
                             onCheckInBattery();
+                            LogUtil.i("#####curStep wait isPortEmpty not ");
                         }else {
+                            LogUtil.i("#####curStep wait isPortEmpty ");
                             checkHasBatteryTimes ++ ;
                         }
                     }else {
@@ -77,7 +97,7 @@ public class CheckingActivity extends BaseActivity {
                         result = ResultActivity.NO_CHECK_BATTERY;
                         endTime = 1;
                     }
-                }
+               // }
             }
             if (curStep == STEP_CHECK_BATTERYOK){
                 LogUtil.i("#########");
@@ -90,9 +110,10 @@ public class CheckingActivity extends BaseActivity {
         }
     }
     private void onCheckInBattery(){
+        LogUtil.i("#####curStep wait onCheckInBattery ");
         BatteryInfo battery = LocalDataManager.mBattery1;
         if(battery != null){
-            if (battery.getpId().equals(OrderManager.currentOrder.getBatteryId())){
+            if (battery.getSn().equals(OrderManager.currentOrder.getBatteryId())){
                 if(battery.isInValid()){
                     //体检成功
                     onCheckOutBattey();

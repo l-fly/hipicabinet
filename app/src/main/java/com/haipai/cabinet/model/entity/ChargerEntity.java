@@ -40,7 +40,7 @@ public class ChargerEntity extends BaseEntity{
                     }
                     LocalDataManager.getInstance().getChargerDataPartTow(port);
                     try {
-                        Thread.sleep(20000);
+                        Thread.sleep(30000);
                     }catch (Exception e){}
                 }
             }

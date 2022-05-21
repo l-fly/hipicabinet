@@ -35,9 +35,12 @@ public class SelfInfoActivity extends BaseActivity {
                 break;
             case R.id.get_ccu:
                 mDateType = GET_DATA_CCU;
+                tvInfo.setText(LocalDataManager.getInstance().cabinet.getCcu().getDescribe());
                 break;
             case R.id.get_pms:
                 mDateType = GET_DATA_PMS;
+                PmsEntity pmsEntity = LocalDataManager.getInstance().cabinet.getPmsList().get(selectPort);
+                tvInfo.setText(pmsEntity.getDescribe());
                 break;
             case R.id.add:
                 if(selectPort < 12){
@@ -71,7 +74,7 @@ public class SelfInfoActivity extends BaseActivity {
     @Override
     public void passSecond() {
         super.passSecond();
-
+/*
         timeTick++;
         if(timeTick > refreshVal) {
             timeTick = 0;
@@ -88,7 +91,7 @@ public class SelfInfoActivity extends BaseActivity {
 
             }
 
-        }
+        }*/
     }
 
     @Override
