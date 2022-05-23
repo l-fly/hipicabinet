@@ -27,6 +27,7 @@ import com.haipai.cabinet.manager.TcpManager;
 import com.haipai.cabinet.manager.WIFIManager;
 import com.haipai.cabinet.ui.activity.back.BackWaitBatteryActivity;
 import com.haipai.cabinet.ui.activity.get.GetOpenActivity;
+import com.haipai.cabinet.ui.activity.inquiry.InquiryWaitBatteryActivity;
 import com.haipai.cabinet.util.CustomMethodUtil;
 import com.haipai.cabinet.util.LogUtil;
 import com.haipai.cabinet.util.PreferencesUtil;
@@ -108,6 +109,29 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.tv_code)
     TextView tvCode;
 
+    @OnClick({R.id.rl_inquiry})
+    public void actionInquiry(){
+
+        int valid = LocalDataManager.getLogicValidBatteryNum(0)
+                + LocalDataManager.getLogicValidBatteryNum(1)
+                + LocalDataManager.getLogicValidBatteryNum(2);
+        if (valid <= 0){
+            showToast("没有可换电池");
+            speak("没有可换电池");
+        }else if(LocalDataManager.getEmptyNum() <= 0){
+            showToast("没有空仓");
+            speak("没有空仓");
+        }else {
+            startActivity(new Intent(this, InquiryWaitBatteryActivity.class));
+        }
+
+    }
+    @OnClick({R.id.rl_see_battery})
+    public void actionSeeBattery(){
+
+        startActivity(new Intent(MainActivity.this, BatteryDetailActivity.class));
+
+    }
     @OnClick({R.id.tv_return_num})
     public void actionTest(){
         //startActivity(new Intent(MainActivity.this, BackWaitBatteryActivity.class));

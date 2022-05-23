@@ -358,6 +358,25 @@ public class TcpManager {
                             }
                         }
                         break;
+                    case 113:
+                        int state = rootObject.getInt("state");
+                        String inquiryResult= "103";
+                        switch (state){
+                            case 0:
+                                inquiryResult = "100";
+                                break;
+                            case 1:
+                                inquiryResult = "101";
+                                break;
+                            case 2:
+                                inquiryResult = "102";
+                                break;
+                            case 3:
+                                inquiryResult = "103";
+                                break;
+                        }
+                        OrderManager.getInstance().receiveInquiryOrder(inquiryResult);
+                        break;
                     case 411:
                         dropWait(txnNo);
                         break;

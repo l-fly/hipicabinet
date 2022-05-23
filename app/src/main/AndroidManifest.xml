@@ -30,7 +30,6 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
-
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -39,6 +38,15 @@
         android:roundIcon="@mipmap/app_icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.Design.Light.NoActionBar">
+        <activity
+            android:name=".ui.activity.BatteryDetailActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ui.activity.inquiry.InquiryWaitBatteryActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ui.activity.inquiry.InquiryCheckingActivity"
+            android:exported="true" />
         <activity
             android:name=".ui.activity.TestOperationActivity"
             android:exported="true" />
@@ -121,16 +129,18 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <receiver android:name=".broadcast.StartReceiver"
+
+        <receiver
+            android:name=".broadcast.StartReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
-            <intent-filter >
+            <intent-filter>
                 <action android:name="android.intent.action.MEDIA_MOUNTED" />
                 <action android:name="android.intent.action.MEDIA_UNMOUNTED" />
-                <data android:scheme="file" >
-                </data>
+
+                <data android:scheme="file"></data>
             </intent-filter>
         </receiver>
     </application>

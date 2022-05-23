@@ -103,7 +103,6 @@ public class BatteryInfo implements Serializable {
      * @return
      */
     public boolean isInValid(){
-        // todo
         return true;
     }
 
@@ -120,7 +119,6 @@ public class BatteryInfo implements Serializable {
     }
 
     public BatteryInfo clone(BatteryInfo info){
-        //pId = info.pId;
         sn = info.sn;
         port = info.port;
         fault = info.fault;

@@ -85,4 +85,10 @@ public class OrderManager {
         }
         ReportManager.baseResponse(501,result,txnNo);
     }
+
+    public void receiveInquiryOrder(String result){
+        if(orderListener!=null){
+            orderListener.onReceive(result);
+        }
+    }
 }

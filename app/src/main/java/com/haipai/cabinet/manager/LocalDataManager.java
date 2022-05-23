@@ -42,7 +42,7 @@ public class LocalDataManager {
     public static BatteryInfo mBatteryGet = null;
     public static BatteryInfo mBatteryBack = null;
 
-    public static int outValidSoc = 1;      //可借出电池电量值，小于此的电量不能借出
+    public static int outValidSoc = 80;      //可借出电池电量值，小于此的电量不能借出
 
     private static int batteryTotal = 0;
 
@@ -90,11 +90,11 @@ public class LocalDataManager {
     public static int getLogicGetBatteryNum(int vType){
         int num;
         if(vType == 0){
-            num = batteryNum48;
+            num = realValidBatteryNum48 -1;
         }else if(vType== 1){
-            num = batteryNum60;
+            num = realValidBatteryNum60 -1;
         }else if(vType== 2){
-            num = batteryNum72;
+            num = realValidBatteryNum72 -1;
         }else {
             num = 0;
         }

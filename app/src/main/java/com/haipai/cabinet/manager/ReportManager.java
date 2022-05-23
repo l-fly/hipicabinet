@@ -3,6 +3,7 @@ package com.haipai.cabinet.manager;
 import com.haipai.cabinet.entity.AllPropertiesRequest;
 import com.haipai.cabinet.entity.BaseResponse;
 import com.haipai.cabinet.entity.BatteryInfo;
+import com.haipai.cabinet.entity.InquiryRequest;
 import com.haipai.cabinet.entity.LoginRequest;
 import com.haipai.cabinet.entity.WarningRequest;
 import com.haipai.cabinet.model.entity.PmsEntity;
@@ -27,6 +28,16 @@ public class ReportManager {
         request.setImsi(LocalDataManager.imsi);
         request.setDevType(2);
         request.setTxnNo(System.currentTimeMillis());
+        TcpManager.getInstance().send(ServerProtocolDefine.makeDataBytes(request));
+    }
+
+    public static void inquiryExchange(String txnno,String bId){
+
+        InquiryRequest request = new InquiryRequest();
+        request.setMsgType(112);
+        request.setDevId(LocalDataManager.devId);
+        request.setTxnno(txnno);
+        request.setBatteryId(bId);
         TcpManager.getInstance().send(ServerProtocolDefine.makeDataBytes(request));
     }
 
@@ -73,7 +84,10 @@ public class ReportManager {
         }
         String txnNo ;
         if(OrderManager.currentOrder!=null){
-            bean.setUserId(OrderManager.currentOrder.getUserId());
+            if (OrderManager.currentOrder.getUserId()!=null
+                    && !OrderManager.currentOrder.getUserId().isEmpty()){
+                bean.setUserId(OrderManager.currentOrder.getUserId());
+            }
             txnNo = OrderManager.currentOrder.getTxnNo();
             request.setTxnNo(txnNo);
         }else {
@@ -120,11 +134,11 @@ public class ReportManager {
         cabBean.setBatFullB("" + LocalDataManager.getLogicValidBatteryNum(1));
         cabBean.setBatFullC("" + LocalDataManager.getLogicValidBatteryNum(2));
 
-        //协议没弄明白 todo
-        List<String> cabFault = new ArrayList<>();
-        cabFault.add("000");
-        cabBean.setCabFault(cabFault);
-        cabBean.setCabAlarm(cabFault);
+        //协议没弄明白
+        List<String> undefinedFault = new ArrayList<>();
+        undefinedFault.add("000");
+        cabBean.setCabFault(undefinedFault);
+        cabBean.setCabAlarm(undefinedFault);
 
         cabList.add(cabBean);
 
@@ -134,31 +148,34 @@ public class ReportManager {
             if(LocalDataManager.getInstance().cabinet.getPmsList().size()>i){
                 PmsEntity pmsEntity = LocalDataManager.getInstance().cabinet.getPmsList().get(i);
                 AllPropertiesRequest.BoxListBean boxBean  = new AllPropertiesRequest.BoxListBean();
-                //boxBean.setChgTime();
-                boxBean.setDoorSta("" + 0);
+                boxBean.setDoorSta("" + (CustomMethodUtil.isOpen(i)?1:0));
                 boxBean.setDoorId("" + pmsEntity.getCabinID());
-
-               // boxBean.setBoxEnable("" + ((CustomMethodUtil.isPortDisable(pmsEntity.getPort())?0:1)));
-                boxBean.setBoxEnable("" + 1);
-
-                boxBean.setBoxChgSta("" + 2);
+                boxBean.setBoxEnable("" + ((CustomMethodUtil.isPortDisable(pmsEntity.getPort())?0:1)));
+                //boxBean.setChgTime();
+               // boxBean.setBoxEnable("" + 1);
+               // boxBean.setBoxChgSta("" + 2);
                 //boxBean.setDoorSta("" + ((pmsEntity.getDevState()&1)==1?0:1));
-               // boxBean.setBoxChgSta("" + ((pmsEntity.getDevState()&2)==1?0:1));
-                boxBean.setBoxSta("" + 1);
-                boxBean.setBoxFault(cabFault);
-                boxBean.setBoxAlarm(cabFault);
+                boxBean.setBoxChgSta("" + ((pmsEntity.getDevState()&2)!=0?1:2));
+                int boxSta;
                 if(pmsEntity.hasBattery()){
-                    boxBean.setBatteryId(pmsEntity.getBatteryInfo().getSn());
-                   /* AllPropertiesRequest.BatListBean batBean = new AllPropertiesRequest.BatListBean();
-                    BatteryInfo battery = pmsEntity.getBatteryInfo();
-                    batBean.setBatteryId(battery.getSn());
-                    //batBean.setBmsT();
-                    batBean.setSoc("" + battery.getSoc());
-                    batBean.setChgCur("" + battery.getCurrent());
-                    batBean.setBatVol("" + battery.getVoltage());
-                    batBean.setBatCycle("" + battery.getCycle());
-                    batList.add(batBean);*/
+                    BatteryInfo info = pmsEntity.getBatteryInfo();
+                    boxBean.setBatteryId(info.getSn());
+                    boxSta = 7;
+                    if (info.isOutValid()){
+                        boxSta = 2;
+                    }else {
+                        if ((pmsEntity.getDevState()&2)!=0){
+                            boxSta = 1;
+                        }
+                    }
+                }else {
+                    boxSta = 0;
                 }
+                boxBean.setBoxSta("" + boxSta);
+
+                boxBean.setBoxFault(undefinedFault);
+                boxBean.setBoxAlarm(undefinedFault);
+
                 boxList.add(boxBean);
             }
         }
@@ -169,16 +186,21 @@ public class ReportManager {
         for (BatteryInfo info :rlt){
             AllPropertiesRequest.BatListBean batBean = new AllPropertiesRequest.BatListBean();
             batBean.setBatteryId(info.getSn());
-            batBean.setBmsT("" +37);
-            batBean.setTotalAH("" +55);
-            batBean.setChgCur("" + 0.0);
-            batBean.setSoc("" + 98);
-            //batBean.setChgCur("" + info.getCurrent());
-            batBean.setBatVol("" + 48);
+           // batBean.setBmsT("" +37);
+            batBean.setTotalAH("" + info.getResidualmAh());
+            batBean.setSoc("" + info.getSoc());
+            batBean.setChgCur("" + info.getCurrent());
+            int batVol = 48;
+            if(info.getType() == 1){
+                batVol = 60;
+            }else if (info.getType() == 2){
+                batVol = 72;
+            }
+            batBean.setBatVol("" + batVol);
             batBean.setBatCycle("" + 1);
             batBean.setDoorId("" + (info.getPort()+1));
-            batBean.setBmsFault(cabFault);
-            batBean.setBmsAlarm(cabFault);
+            batBean.setBmsFault(undefinedFault);
+            batBean.setBmsAlarm(undefinedFault);
             batList.add(batBean);
         }
 

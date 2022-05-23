@@ -1,16 +1,20 @@
-package com.haipai.cabinet.ui.activity;
+package com.haipai.cabinet.ui.activity.inquiry;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.widget.TextView;
 
 import com.haipai.cabinet.R;
 import com.haipai.cabinet.entity.BatteryInfo;
+import com.haipai.cabinet.entity.OrderInfo;
 import com.haipai.cabinet.manager.LocalDataManager;
 import com.haipai.cabinet.manager.OrderManager;
 import com.haipai.cabinet.manager.ReportManager;
+import com.haipai.cabinet.ui.activity.BaseActivity;
+import com.haipai.cabinet.ui.activity.ResultActivity;
 import com.haipai.cabinet.util.CustomMethodUtil;
 import com.haipai.cabinet.util.LogUtil;
 
@@ -20,7 +24,7 @@ import java.util.Random;
 
 import butterknife.BindView;
 
-public class CheckingActivity extends BaseActivity {
+public class InquiryCheckingActivity extends BaseActivity {
     @BindView(R.id.tv_slot)
     TextView tvSlot;
     @BindView(R.id.tv_describe)
@@ -113,7 +117,7 @@ public class CheckingActivity extends BaseActivity {
         LogUtil.i("#####curStep wait onCheckInBattery ");
         BatteryInfo battery = LocalDataManager.mBattery1;
         if(battery != null){
-            if (battery.getSn().equals(OrderManager.currentOrder.getBatteryId())){
+            /*if (battery.getSn().equals(OrderManager.currentOrder.getBatteryId())){
                 if(battery.isInValid()){
                     //体检成功
                     onCheckOutBattey();
@@ -126,7 +130,26 @@ public class CheckingActivity extends BaseActivity {
                 //电池不属于用户
                 result = ResultActivity.CHECK_BATTERY_NOTYOURS;
                 endTime = 1;
+            }*/
+
+           // ReportManager.inquiryExchange();
+
+            if(battery.isInValid()){
+                //体检成功
+               // onCheckOutBattey();
+                OrderInfo orderInfo = new OrderInfo();
+                orderInfo.setId("switchControl");
+                orderInfo.setTxnNo("" + System.currentTimeMillis());
+                orderInfo.setBatteryId(battery.getSn());
+                OrderManager.currentOrder = orderInfo;
+
+                ReportManager.inquiryExchange(orderInfo.getTxnNo(),orderInfo.getBatteryId());
+            }else {
+                //体检失败
+                result = ResultActivity.CHECK_BATTERY_FAIL;
+                endTime = 1;
             }
+
 
         }else {
             result = ResultActivity.NO_CHECK_BATTERY;
@@ -176,5 +199,55 @@ public class CheckingActivity extends BaseActivity {
             endTime = 1;
         }
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        OrderManager.getInstance().setOrderListener(orderListener);
+    }
+
+    @SuppressLint("HandlerLeak")
+    Handler mHandler = new Handler() {
+        @Override
+        public void dispatchMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    onCheckOutBattey();
+                    break;
+                case 1:
+                    result = ResultActivity.INQUIRY_PACKAGE_EXPIRED;
+                    endTime = 1;
+                    break;
+                case 2:
+                    onCheckOutBattey();
+                    break;
+                case 3:
+                    result = ResultActivity.INQUIRY_CANNOT;
+                    endTime = 1;
+                    break;
+            }
+
+        }
+    };
+
+    OrderManager.IOrderListener orderListener = new OrderManager.IOrderListener() {
+
+        @Override
+        public void onReceive(String type) {
+            switch (type){
+                case "100": //换电
+                    mHandler.sendEmptyMessage(0);
+                    break;
+                case "101"://首放 取
+                    mHandler.sendEmptyMessage(1);
+                    break;
+                case "102"://退还电池
+                    mHandler.sendEmptyMessage(2);
+                    break;
+                case "103"://退还电池
+                    mHandler.sendEmptyMessage(3);
+                    break;
+            }
+        }
+    };
 
 }

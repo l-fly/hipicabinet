@@ -35,7 +35,7 @@
                     <ImageView
                         android:layout_width="46dp"
                         android:layout_height="66dp"
-                        android:background="@mipmap/icon_bat_dark"/>
+                        android:background="@mipmap/icon_bat_dark_"/>
                     <TextView
                         android:layout_marginTop="10dp"
                         android:textSize="22sp"
@@ -96,7 +96,7 @@
                     <ImageView
                         android:layout_width="46dp"
                         android:layout_height="66dp"
-                        android:background="@mipmap/icon_bat_dark"/>
+                        android:background="@mipmap/icon_bat_dark_"/>
                     <TextView
                         android:layout_marginTop="10dp"
                         android:textSize="22sp"
@@ -158,7 +158,7 @@
                     <ImageView
                         android:layout_width="46dp"
                         android:layout_height="66dp"
-                        android:background="@mipmap/icon_bat_dark"/>
+                        android:background="@mipmap/icon_bat_dark_"/>
                     <TextView
                         android:layout_marginTop="10dp"
                         android:textSize="22sp"
@@ -253,17 +253,19 @@
                 android:layout_width="285dp"
                 android:layout_height="100dp" />
             <RelativeLayout
+                android:id="@+id/rl_inquiry"
+                android:background="@drawable/inquiry_selector"
                 android:layout_marginTop="20dp"
-                android:layout_width="280dp"
+                android:layout_width="220dp"
                 android:layout_height="60dp"
                 android:orientation="horizontal">
-                <ImageView
+               <!-- <ImageView
                     android:layout_centerHorizontal="true"
                     android:scaleType="centerCrop"
                     android:alpha="0.5"
-                    android:src="@mipmap/bg_into_battery_detail"
+                    android:src="@drawable/inquiry_selector"
                     android:layout_width="220dp"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent" />-->
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -297,18 +299,19 @@
         </LinearLayout>
     </LinearLayout>
     <RelativeLayout
+        android:id="@+id/rl_see_battery"
+        android:background="@drawable/see_battery_selector"
         android:layout_marginBottom="60dp"
         android:layout_alignParentBottom="true"
         android:layout_width="150dp"
         android:layout_height="60dp"
         android:orientation="horizontal">
-        <ImageView
-            android:alpha="0.8"
+       <!-- <ImageView
             android:layout_centerHorizontal="true"
             android:scaleType="centerCrop"
             android:background="@drawable/bg_see_battery"
             android:layout_width="150dp"
-            android:layout_height="60dp" />
+            android:layout_height="60dp" />-->
         <TextView
             android:layout_centerInParent="true"
             android:layout_width="wrap_content"

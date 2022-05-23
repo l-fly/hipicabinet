@@ -33,6 +33,9 @@ public class ResultActivity extends BaseActivity {
     public static final int NO_CHECK_BATTERY_ENOUGH = 6; //没有可换电池
     public static final int NO_OUT_OPEN_SLOT = 7; //要出的电池仓门打不开
     public static final int CHECK_BATTERY_NOTYOURS = 8; //体检失败
+
+    public static final int INQUIRY_CANNOT = 9; //不可换电
+    public static final int INQUIRY_PACKAGE_EXPIRED = 10; //套餐过期
     private int result;
     private int openOutTimes = 0; //出电池的开门次数
     private int openInTimes = 0; //进电池开门次数
@@ -115,6 +118,21 @@ public class ResultActivity extends BaseActivity {
             //没有可换电池，协议里没有此类型，用23替代
             ReportManager.switchFinishReport(23,LocalDataManager.openSlot1,null,null);
         }
+
+        else if(result == INQUIRY_CANNOT){
+            tvSlot.setText("换电失败");
+            tvDescribe.setText("不可换电，请检查电池是否属于您");
+            speak("不可换电，请检查电池是否属于您");
+            endTime = 7 ;
+
+        }
+        else if(result == INQUIRY_PACKAGE_EXPIRED){
+            tvSlot.setText("换电失败");
+            tvDescribe.setText("换电失败，您的套餐已过期");
+            speak("换电失败，您的套餐已过期");
+            endTime = 7 ;
+
+        }
     }
 
     @Override
@@ -182,7 +200,9 @@ public class ResultActivity extends BaseActivity {
            }
            else if (result == NO_CHECK_BATTERY
                     || result == CHECK_BATTERY_FAIL
-                    || result == NO_CHECK_BATTERY_ENOUGH){
+                    || result == NO_CHECK_BATTERY_ENOUGH
+                    || result == INQUIRY_CANNOT
+                    || result == INQUIRY_PACKAGE_EXPIRED){
                if(endTime % 4 == 1) {
                    if(CustomMethodUtil.isOpen(LocalDataManager.openSlot1)){
                        tvSlot.setText("换电失败");

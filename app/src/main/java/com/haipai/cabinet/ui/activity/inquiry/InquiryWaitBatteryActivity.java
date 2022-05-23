@@ -1,4 +1,4 @@
-package com.haipai.cabinet.ui.activity;
+package com.haipai.cabinet.ui.activity.inquiry;
 
 
 import android.content.Intent;
@@ -9,6 +9,8 @@ import com.haipai.cabinet.R;
 import com.haipai.cabinet.entity.BatteryInfo;
 import com.haipai.cabinet.manager.LocalDataManager;
 import com.haipai.cabinet.manager.ReportManager;
+import com.haipai.cabinet.ui.activity.BaseActivity;
+import com.haipai.cabinet.ui.activity.ResultActivity;
 import com.haipai.cabinet.util.CustomMethodUtil;
 import com.haipai.cabinet.util.LogUtil;
 
@@ -16,7 +18,7 @@ import java.util.List;
 
 import butterknife.BindView;
 
-public class WaitBatteryActivity extends BaseActivity {
+public class InquiryWaitBatteryActivity extends BaseActivity {
     @BindView(R.id.tv_slot)
     TextView tvSlot;
     @BindView(R.id.tv_describe)
@@ -31,6 +33,7 @@ public class WaitBatteryActivity extends BaseActivity {
     private static final int CLOSE_PROCESS = 2;  //关门阶段
     private static final int STEP_FAIL = 3;  //阶段失败，进入下个判断
     private int curStep = OPEN_PROCESS;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,7 +136,7 @@ public class WaitBatteryActivity extends BaseActivity {
                     if(!CustomMethodUtil.isOpen(LocalDataManager.openSlot1)){
                         result = 0;
                         endTime = -1;
-                        startActivity(new Intent(WaitBatteryActivity.this, CheckingActivity.class));
+                        startActivity(new Intent(InquiryWaitBatteryActivity.this, InquiryCheckingActivity.class));
                         finish();
                     }else {
                         result = ResultActivity.NO_CLOSE_SLOT;
@@ -142,7 +145,7 @@ public class WaitBatteryActivity extends BaseActivity {
             }
         }else if(endTime ==0){
             if(result == 0){
-                startActivity(new Intent(WaitBatteryActivity.this, CheckingActivity.class));
+                startActivity(new Intent(InquiryWaitBatteryActivity.this, InquiryCheckingActivity.class));
                 finish();
             }else{
                 Intent intent = new Intent(this, ResultActivity.class);
